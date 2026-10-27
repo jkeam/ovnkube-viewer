@@ -1,6 +1,6 @@
 # Node.js Upgrade Guide
 
-This project now requires **Node.js v24.22.1 (LTS)** or later.
+This project now requires **Node.js v24.21.0 (LTS)** or later.
 
 ## Quick Upgrade
 
@@ -12,7 +12,7 @@ nvm install 24
 nvm use 24
 
 # Verify version
-node --version  # Should show v24.22.1 or later
+node --version  # Should show v24.21.0 or later
 
 # Set as default (optional)
 nvm alias default 24
@@ -67,7 +67,7 @@ choco install nodejs-lts
 ## What Changed
 
 - ✅ **Dockerfile**: Updated to `node:24-alpine`
-- ✅ **package.json**: Added `engines` field requiring Node ≥24.22.1
+- ✅ **package.json**: Added `engines` field requiring Node ≥24.21.0
 - ✅ **.nvmrc**: Created for nvm users
 - ✅ **run.sh**: Now checks for Node 24+
 - ✅ **Documentation**: Updated all references
@@ -136,7 +136,7 @@ If you work on multiple Node.js projects with different versions:
    The project includes `.nvmrc` files that automatically switch to the correct version:
    ```bash
    cd /path/to/ovnkube-viewer
-   nvm use  # Automatically uses v24.22.1
+   nvm use  # Automatically uses v24.21.0
    ```
 
 4. **Add to shell profile** (optional):
@@ -157,7 +157,7 @@ After upgrading, verify your setup:
 
 ```bash
 # Check versions
-node --version    # v24.22.1 or later
+node --version    # v24.21.0 or later
 npm --version     # 10.0.0 or later
 
 # Check run.sh
@@ -187,4 +187,4 @@ If you only use Docker, you don't need to upgrade your local Node.js:
 ---
 
 **Updated**: October 26, 2026  
-**Required Version**: Node.js ≥ v24.22.1 (LTS)
+**Required Version**: Node.js ≥ v24.21.0 (LTS)

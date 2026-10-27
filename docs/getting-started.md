@@ -5,7 +5,7 @@ This guide will help you get the Phase 1 standalone application up and running.
 ## Prerequisites
 
 - **Go** 1.21 or later
-- **Node.js** 24.22.1 or later (LTS)
+- **Node.js** 24.21.0 or later (LTS)
 - **npm** 10.0.0 or later
 - **Docker** and **Docker Compose** (optional, for containerized deployment)
 - **Make** (optional, but recommended)

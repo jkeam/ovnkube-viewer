@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
   - Updated `backend/go.mod` from 1.27.3 to 1.26.10
   - Go 1.26.10 is Red Hat's version (Red Hat 1.26.10-1.el9_8)
 
+- **Node.js version requirement updated to 24.21.0** - Matches the Node.js version in UBI9 nodejs-24:9.8
+  - Updated `frontend/package.json` engines from >=24.22.1 to >=24.21.0
+  - Node.js 24.21.0 is Red Hat's version in nodejs-24 container
+  - npm version: 11.19.0
+
 - **All containers rebased to Red Hat UBI9** - All Dockerfiles now use Red Hat Universal Base Images:
   
   **Backend:**

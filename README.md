@@ -85,7 +85,7 @@ See [Getting Started Guide](docs/getting-started.md) for setup instructions and 
 ## Technology Stack
 
 - **Backend**: Go 1.26.10+ (UBI9 go-toolset)
-- **Frontend**: React + TypeScript + ReactFlow + PatternFly (Node.js 24.22.1+ LTS)
+- **Frontend**: React + TypeScript + ReactFlow + PatternFly (Node.js 24.21.0+ LTS - UBI9 nodejs-24)
 - **Design System**: PatternFly 5.4 + Red Hat UX
 - **Deployment**: Docker, Kubernetes, Helm, OpenShift Operator
 - **Operator**: Operator SDK

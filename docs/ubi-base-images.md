@@ -87,7 +87,8 @@ We use **ubi-micro** for the runtime as our Go binary is statically compiled.
 
 **Image:** `registry.redhat.io/ubi9/nodejs-24:9.8-1793067767`
 
-- **Node.js Version:** 24.x LTS
+- **Node.js Version:** 24.21.0 (Red Hat nodejs-24)
+- **npm Version:** 11.19.0
 - **Base:** RHEL 9
 - **User:** Non-root (UID 1001)
 - **Workdir:** `/opt/app-root/src`
