@@ -1,7 +1,8 @@
 # Build stage
-FROM node:24-alpine AS builder
+FROM registry.redhat.io/ubi9/nodejs-24:9.8-1793067767 AS builder
 
-WORKDIR /app
+# Set working directory
+WORKDIR /opt/app-root/src
 
 # Copy package files
 COPY package*.json ./
@@ -15,23 +16,20 @@ COPY . .
 # Build the console plugin
 RUN npm run build:plugin
 
-# Runtime stage - serve the plugin with nginx
-FROM nginx:alpine
+# Runtime stage - use UBI9 nginx for serving plugin
+FROM registry.redhat.io/ubi9/nginx-124:1-113
 
 # Copy custom nginx configuration for console plugin
 COPY nginx.plugin.conf /etc/nginx/nginx.conf
 
 # Copy plugin artifacts
-COPY --from=builder /app/dist/plugin /usr/share/nginx/html
+COPY --from=builder /opt/app-root/src/dist/plugin /opt/app-root/src
 
-# Create plugin manifest directory
-RUN mkdir -p /usr/share/nginx/html/plugin-manifest.json
+# Run as non-root user (nginx user)
+USER 1001
 
 # Expose plugin port (standard for console plugins)
 EXPOSE 9443
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:9443/plugin-manifest.json || exit 1
-
+# Run nginx
 CMD ["nginx", "-g", "daemon off;"]

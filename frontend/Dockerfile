@@ -1,7 +1,8 @@
 # Build stage
-FROM node:24-alpine AS builder
+FROM registry.redhat.io/ubi9/nodejs-24:9.8-1793067767 AS builder
 
-WORKDIR /app
+# Set working directory
+WORKDIR /opt/app-root/src
 
 # Copy package files
 COPY package*.json ./
@@ -12,18 +13,23 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build the application (standalone version)
+RUN npm run build:standalone
 
-# Runtime stage
-FROM nginx:alpine
+# Runtime stage - use UBI9 nginx
+FROM registry.redhat.io/ubi9/nginx-124:1-113
 
 # Copy built files to nginx
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /opt/app-root/src/dist /opt/app-root/src
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+# Run as non-root user (nginx user)
+USER 1001
 
+# Expose port
+EXPOSE 8080
+
+# Run nginx
 CMD ["nginx", "-g", "daemon off;"]

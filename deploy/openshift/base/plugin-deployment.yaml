@@ -39,7 +39,6 @@ spec:
               drop:
                 - ALL
             runAsNonRoot: true
-            runAsUser: 101  # nginx user
           livenessProbe:
             httpGet:
               path: /plugin-manifest.json
