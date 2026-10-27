@@ -17,7 +17,7 @@ FROM alpine:latest
 ```dockerfile
 FROM registry.redhat.io/ubi9/go-toolset:9.8-1793107762 AS builder
 # ...
-FROM registry.redhat.io/ubi9/ubi-micro:9.5-1733767867
+FROM registry.redhat.io/ubi9/ubi-micro:9.8-1791895366
 ```
 
 ### Frontend and Plugin (Node.js + Nginx)
@@ -74,7 +74,7 @@ We use **ubi-micro** for the runtime as our Go binary is statically compiled.
 
 #### Runtime Stage: ubi-micro
 
-**Image:** `registry.redhat.io/ubi9/ubi-micro:9.5-1733767867`
+**Image:** `registry.redhat.io/ubi9/ubi-micro:9.8-1791895366`
 
 - **Size:** ~40MB
 - **Minimal:** No package manager, no shell
@@ -122,7 +122,7 @@ UBI images are **freely available** and don't require authentication to pull:
 
 ```bash
 # No login needed for UBI images
-podman pull registry.redhat.io/ubi9/ubi-micro:9.5-1733767867
+podman pull registry.redhat.io/ubi9/ubi-micro:9.8-1791895366
 
 # Build will work without authentication
 podman build -t ovnkube-viewer-backend:latest -f backend/Dockerfile backend/
@@ -387,7 +387,7 @@ Scan UBI images for vulnerabilities:
 trivy image ovnkube-viewer-backend:latest
 
 # Using podman/skopeo
-skopeo inspect docker://registry.redhat.io/ubi9/ubi-micro:9.5-1733767867
+skopeo inspect docker://registry.redhat.io/ubi9/ubi-micro:9.8-1791895366
 ```
 
 ## Resources

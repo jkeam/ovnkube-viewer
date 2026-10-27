@@ -18,7 +18,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/server
 
 # Runtime stage - use UBI9 micro for minimal footprint
-FROM registry.redhat.io/ubi9/ubi-micro:9.5-1733767867
+FROM registry.redhat.io/ubi9/ubi-micro:9.8-1791895366
 
 # Set working directory
 WORKDIR /app

@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
   
   **Backend:**
   - Build stage: `registry.redhat.io/ubi9/go-toolset:9.8-1793107762`
-  - Runtime stage: `registry.redhat.io/ubi9/ubi-micro:9.5-1733767867`
+  - Runtime stage: `registry.redhat.io/ubi9/ubi-micro:9.8-1791895366`
   
   **Frontend & Plugin:**
   - Build stage: `registry.redhat.io/ubi9/nodejs-24:9.8-1793067767`

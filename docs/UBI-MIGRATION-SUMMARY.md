@@ -15,7 +15,7 @@ FROM alpine:latest
 **After:**
 ```dockerfile
 FROM registry.redhat.io/ubi9/go-toolset:9.8-1793107762 AS builder
-FROM registry.redhat.io/ubi9/ubi-micro:9.5-1733767867
+FROM registry.redhat.io/ubi9/ubi-micro:9.8-1791895366
 ```
 
 ### Frontend Container
@@ -269,7 +269,7 @@ UBI images are **freely available** - no Red Hat subscription required:
 
 ```bash
 # Pull UBI images (no auth needed)
-podman pull registry.redhat.io/ubi9/ubi-micro:9.5-1733767867
+podman pull registry.redhat.io/ubi9/ubi-micro:9.8-1791895366
 podman pull registry.redhat.io/ubi9/go-toolset:9.8-1793107762
 podman pull registry.redhat.io/ubi9/nodejs-24:9.8-1793067767
 podman pull registry.redhat.io/ubi9/nginx-124:1-113
