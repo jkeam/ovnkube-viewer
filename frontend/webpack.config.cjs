@@ -1,10 +1,9 @@
-import * as path from 'path';
-import { Configuration } from 'webpack';
-import { ConsoleRemotePlugin } from '@openshift-console/dynamic-plugin-sdk-webpack';
-import CopyWebpackPlugin from 'copy-webpack-plugin';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+const path = require('path');
+const { ConsoleRemotePlugin } = require('@openshift-console/dynamic-plugin-sdk-webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const config: Configuration = {
+const config = {
   mode: 'production',
   entry: {},
   output: {
@@ -66,4 +65,4 @@ const config: Configuration = {
   },
 };
 
-export default config;
+module.exports = config;

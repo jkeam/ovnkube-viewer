@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import {
   Page,
-  PageSection,
-  PageSectionVariants,
   Masthead,
   MastheadMain,
   MastheadBrand,
-  MastheadContent,
   Brand,
   Drawer,
   DrawerContent,
