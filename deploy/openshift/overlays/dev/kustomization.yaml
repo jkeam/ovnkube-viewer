@@ -1,0 +1,63 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ovnkube-viewer-dev
+
+namePrefix: dev-
+
+resources:
+  - ../../base
+
+commonLabels:
+  environment: development
+
+patches:
+  # Reduce replicas for dev environment
+  - target:
+      kind: Deployment
+      name: ovnkube-viewer-backend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+  - target:
+      kind: Deployment
+      name: ovnkube-viewer-frontend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+  # Update namespace references
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: ovnkube-viewer-dev
+
+  - target:
+      kind: ClusterRoleBinding
+    patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: ovnkube-viewer-dev
+
+  # Update ConfigMap for dev environment
+  - target:
+      kind: ConfigMap
+      name: ovnkube-viewer-config
+    patch: |-
+      - op: replace
+        path: /data/CORS_ALLOWED_ORIGINS
+        value: "*"
+      - op: add
+        path: /data/LOG_LEVEL
+        value: "debug"
+
+images:
+  - name: quay.io/yourorg/ovnkube-viewer-backend
+    newTag: dev
+  - name: quay.io/yourorg/ovnkube-viewer-frontend
+    newTag: dev

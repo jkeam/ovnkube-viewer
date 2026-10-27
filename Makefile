@@ -60,3 +60,81 @@ test: backend-test ## Run all tests
 
 # All
 all: backend-build frontend-build ## Build everything
+
+# OpenShift/Kubernetes deployment targets
+REGISTRY ?= quay.io/yourorg
+BACKEND_IMAGE ?= $(REGISTRY)/ovnkube-viewer-backend
+FRONTEND_IMAGE ?= $(REGISTRY)/ovnkube-viewer-frontend
+TAG ?= latest
+OVERLAY ?= dev
+
+.PHONY: openshift-build openshift-push openshift-deploy openshift-undeploy openshift-logs openshift-validate
+
+openshift-build: ## Build container images for OpenShift
+	podman build -t $(BACKEND_IMAGE):$(TAG) -f backend/Dockerfile backend
+	podman build -t $(FRONTEND_IMAGE):$(TAG) -f frontend/Dockerfile frontend
+
+openshift-push: ## Push container images to registry
+	podman push $(BACKEND_IMAGE):$(TAG)
+	podman push $(FRONTEND_IMAGE):$(TAG)
+
+openshift-validate: ## Validate Kustomize manifests
+	@echo "Validating $(OVERLAY) overlay..."
+	oc kustomize deploy/openshift/overlays/$(OVERLAY)
+
+openshift-deploy: ## Deploy to OpenShift (use OVERLAY=dev or OVERLAY=prod)
+	@echo "Deploying $(OVERLAY) overlay..."
+	oc apply -k deploy/openshift/overlays/$(OVERLAY)
+	@echo "Waiting for deployments to be ready..."
+	@sleep 5
+	@if [ "$(OVERLAY)" = "dev" ]; then \
+		oc wait --for=condition=available --timeout=300s deployment/dev-ovnkube-viewer-backend -n ovnkube-viewer-dev || true; \
+		oc wait --for=condition=available --timeout=300s deployment/dev-ovnkube-viewer-frontend -n ovnkube-viewer-dev || true; \
+		echo "Getting route URL..."; \
+		oc get route -n ovnkube-viewer-dev; \
+	else \
+		oc wait --for=condition=available --timeout=300s deployment/ovnkube-viewer-backend -n ovnkube-viewer || true; \
+		oc wait --for=condition=available --timeout=300s deployment/ovnkube-viewer-frontend -n ovnkube-viewer || true; \
+		echo "Getting route URL..."; \
+		oc get route -n ovnkube-viewer; \
+	fi
+
+openshift-undeploy: ## Remove deployment from OpenShift
+	@echo "Removing $(OVERLAY) overlay..."
+	oc delete -k deploy/openshift/overlays/$(OVERLAY)
+
+openshift-logs: ## Tail logs from OpenShift deployment
+	@if [ "$(OVERLAY)" = "dev" ]; then \
+		oc logs -f deployment/dev-ovnkube-viewer-backend -n ovnkube-viewer-dev; \
+	else \
+		oc logs -f deployment/ovnkube-viewer-backend -n ovnkube-viewer; \
+	fi
+
+openshift-status: ## Check OpenShift deployment status
+	@if [ "$(OVERLAY)" = "dev" ]; then \
+		echo "=== Pods ==="; \
+		oc get pods -n ovnkube-viewer-dev -l app=ovnkube-viewer; \
+		echo ""; \
+		echo "=== Deployments ==="; \
+		oc get deployments -n ovnkube-viewer-dev -l app=ovnkube-viewer; \
+		echo ""; \
+		echo "=== Services ==="; \
+		oc get services -n ovnkube-viewer-dev -l app=ovnkube-viewer; \
+		echo ""; \
+		echo "=== Routes ==="; \
+		oc get routes -n ovnkube-viewer-dev; \
+	else \
+		echo "=== Pods ==="; \
+		oc get pods -n ovnkube-viewer -l app=ovnkube-viewer; \
+		echo ""; \
+		echo "=== Deployments ==="; \
+		oc get deployments -n ovnkube-viewer -l app=ovnkube-viewer; \
+		echo ""; \
+		echo "=== Services ==="; \
+		oc get services -n ovnkube-viewer -l app=ovnkube-viewer; \
+		echo ""; \
+		echo "=== Routes ==="; \
+		oc get routes -n ovnkube-viewer; \
+	fi
+
+openshift-all: openshift-build openshift-push openshift-deploy ## Build, push, and deploy to OpenShift

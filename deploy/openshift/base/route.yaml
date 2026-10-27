@@ -1,0 +1,20 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ovnkube-viewer
+  namespace: ovnkube-viewer
+  labels:
+    app: ovnkube-viewer
+    app.kubernetes.io/name: ovnkube-viewer
+    app.kubernetes.io/component: frontend
+spec:
+  to:
+    kind: Service
+    name: ovnkube-viewer-frontend
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

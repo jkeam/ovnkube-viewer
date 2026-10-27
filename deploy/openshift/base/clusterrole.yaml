@@ -1,0 +1,45 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ovnkube-viewer
+  labels:
+    app: ovnkube-viewer
+    app.kubernetes.io/name: ovnkube-viewer
+rules:
+  # Access to OVN/OVS pods for executing ovn-trace
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create", "get"]
+
+  # Access to services for service-based tracing
+  - apiGroups: [""]
+    resources: ["services", "endpoints"]
+    verbs: ["get", "list", "watch"]
+
+  # Access to namespaces for multi-namespace tracing
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+
+  # Access to network policies to understand traffic rules
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies"]
+    verbs: ["get", "list", "watch"]
+
+  # Access to nodes for node-level network information
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+
+  # OpenShift specific network resources
+  - apiGroups: ["network.openshift.io"]
+    resources: ["egressnetworkpolicies", "hostsubnets", "netnamespaces"]
+    verbs: ["get", "list", "watch"]
+
+  # OpenShift routes for service discovery
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
+    verbs: ["get", "list", "watch"]

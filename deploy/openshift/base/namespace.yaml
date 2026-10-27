@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ovnkube-viewer
+  labels:
+    app: ovnkube-viewer
+    app.kubernetes.io/name: ovnkube-viewer
+    app.kubernetes.io/component: observability

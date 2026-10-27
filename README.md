@@ -40,11 +40,13 @@ See [Getting Started Guide](docs/getting-started.md) for setup instructions and 
 - React frontend with ReactFlow
 - Docker deployment
 
-### Phase 2: Kubernetes Native
-- Helm chart deployment
-- Kubernetes RBAC integration
-- Persistent trace history
-- Multi-tenancy support
+### Phase 2: Kubernetes Native ✅
+- ✅ OpenShift deployment with Kustomize
+- ✅ Kubernetes RBAC integration
+- ✅ Service accounts with OVN access permissions
+- 🚧 Helm chart deployment
+- 🚧 Persistent trace history
+- 🚧 Multi-tenancy support
 
 ### Phase 3: OpenShift Operator
 - Custom Resource Definitions (TraceRequest, TraceResult)
@@ -119,6 +121,36 @@ make frontend-dev    # Terminal 2
 Then open http://localhost:3000 in your browser.
 
 See [Getting Started Guide](docs/getting-started.md) for detailed instructions.
+
+## OpenShift Deployment
+
+Deploy to OpenShift with Kustomize:
+
+```bash
+# Quick deploy to development
+cd deploy/openshift
+./deploy.sh deploy -o dev -r quay.io/yourorg -t latest
+
+# Or using Make
+make openshift-build openshift-push openshift-deploy OVERLAY=dev REGISTRY=quay.io/yourorg TAG=latest
+
+# Check deployment status
+./deploy.sh status -o dev
+```
+
+The application requires elevated permissions to access OVN components and trace network traffic. See [OpenShift Deployment Guide](deploy/openshift/DEPLOYMENT-GUIDE.md) for:
+- Complete deployment instructions
+- Permission requirements and security considerations
+- Building and pushing container images
+- Customizing configurations
+- Troubleshooting guide
+
+**Quick Links:**
+- [OpenShift README](deploy/openshift/README.md) - Architecture and configuration
+- [Deployment Guide](deploy/openshift/DEPLOYMENT-GUIDE.md) - Step-by-step deployment
+- [Kustomize Base](deploy/openshift/base/) - Base manifests
+- [Dev Overlay](deploy/openshift/overlays/dev/) - Development configuration
+- [Prod Overlay](deploy/openshift/overlays/prod/) - Production configuration
 
 ## Documentation
 
