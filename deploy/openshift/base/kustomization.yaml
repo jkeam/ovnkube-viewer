@@ -25,11 +25,11 @@ commonLabels:
 
 images:
   - name: ovnkube-viewer-backend
-    newName: quay.io/yourorg/ovnkube-viewer-backend
+    newName: quay.io/jkeam/ovnkube-viewer-backend
     newTag: latest
   - name: ovnkube-viewer-frontend
-    newName: quay.io/yourorg/ovnkube-viewer-frontend
+    newName: quay.io/jkeam/ovnkube-viewer-frontend
     newTag: latest
   - name: ovnkube-viewer-plugin
-    newName: quay.io/yourorg/ovnkube-viewer-plugin
+    newName: quay.io/jkeam/ovnkube-viewer-plugin
     newTag: latest
