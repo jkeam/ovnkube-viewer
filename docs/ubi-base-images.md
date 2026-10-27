@@ -98,7 +98,7 @@ We use **ubi-micro** for the runtime as our Go binary is statically compiled.
 
 **Image:** `registry.redhat.io/ubi9/nginx-126:9.8-1793065662`
 
-- **Nginx Version:** 1.24.x
+- **Nginx Version:** 1.26.x (Red Hat nginx-126)
 - **Base:** RHEL 9
 - **User:** Non-root (UID 1001)
 - **Default Port:** 8080 (non-privileged)
