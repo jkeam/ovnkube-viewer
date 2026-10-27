@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file.
   
   **Frontend & Plugin:**
   - Build stage: `registry.redhat.io/ubi9/nodejs-24:9.8-1793067767`
-  - Runtime stage: `registry.redhat.io/ubi9/nginx-124:1-113`
+  - Runtime stage: `registry.redhat.io/ubi9/nginx-126:9.8-1793065662`
   
   **Benefits:**
   - Enterprise support and security updates

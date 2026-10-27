@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build:plugin
 
 # Runtime stage - use UBI9 nginx for serving plugin
-FROM registry.redhat.io/ubi9/nginx-124:1-113
+FROM registry.redhat.io/ubi9/nginx-126:9.8-1793065662
 
 # Copy custom nginx configuration for console plugin
 COPY nginx.plugin.conf /etc/nginx/nginx.conf

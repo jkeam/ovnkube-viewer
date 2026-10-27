@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build:standalone
 
 # Runtime stage - use UBI9 nginx
-FROM registry.redhat.io/ubi9/nginx-124:1-113
+FROM registry.redhat.io/ubi9/nginx-126:9.8-1793065662
 
 # Copy built files to nginx
 COPY --from=builder /opt/app-root/src/dist /opt/app-root/src

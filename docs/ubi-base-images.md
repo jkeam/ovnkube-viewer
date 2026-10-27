@@ -33,7 +33,7 @@ FROM nginx:alpine
 ```dockerfile
 FROM registry.redhat.io/ubi9/nodejs-24:9.8-1793067767 AS builder
 # ...
-FROM registry.redhat.io/ubi9/nginx-124:1-113
+FROM registry.redhat.io/ubi9/nginx-126:9.8-1793065662
 ```
 
 ## Why UBI?
@@ -94,9 +94,9 @@ We use **ubi-micro** for the runtime as our Go binary is statically compiled.
 - **Workdir:** `/opt/app-root/src`
 - **Includes:** npm, node, build tools
 
-#### Runtime Stage: nginx-124
+#### Runtime Stage: nginx-126
 
-**Image:** `registry.redhat.io/ubi9/nginx-124:1-113`
+**Image:** `registry.redhat.io/ubi9/nginx-126:9.8-1793065662`
 
 - **Nginx Version:** 1.24.x
 - **Base:** RHEL 9

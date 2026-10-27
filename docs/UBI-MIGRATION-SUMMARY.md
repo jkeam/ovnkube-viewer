@@ -29,7 +29,7 @@ FROM nginx:alpine
 **After:**
 ```dockerfile
 FROM registry.redhat.io/ubi9/nodejs-24:9.8-1793067767 AS builder
-FROM registry.redhat.io/ubi9/nginx-124:1-113
+FROM registry.redhat.io/ubi9/nginx-126:9.8-1793065662
 ```
 
 ### Console Plugin Container
@@ -43,7 +43,7 @@ FROM nginx:alpine
 **After:**
 ```dockerfile
 FROM registry.redhat.io/ubi9/nodejs-24:9.8-1793067767 AS builder
-FROM registry.redhat.io/ubi9/nginx-124:1-113
+FROM registry.redhat.io/ubi9/nginx-126:9.8-1793065662
 ```
 
 ## 🔄 Breaking Changes
@@ -153,8 +153,8 @@ curl http://localhost:8080
 | Component | Alpine | UBI9 | Change |
 |-----------|--------|------|--------|
 | Backend | ~20MB | ~40MB | +20MB (ubi-micro) |
-| Frontend | ~50MB | ~180MB | +130MB (nginx-124) |
-| Plugin | ~50MB | ~180MB | +130MB (nginx-124) |
+| Frontend | ~50MB | ~180MB | +130MB (nginx-126) |
+| Plugin | ~50MB | ~180MB | +130MB (nginx-126) |
 
 **Note:** Slightly larger images, but benefits outweigh size increase.
 
@@ -272,7 +272,7 @@ UBI images are **freely available** - no Red Hat subscription required:
 podman pull registry.redhat.io/ubi9/ubi-micro:9.8-1791895366
 podman pull registry.redhat.io/ubi9/go-toolset:9.8-1793107762
 podman pull registry.redhat.io/ubi9/nodejs-24:9.8-1793067767
-podman pull registry.redhat.io/ubi9/nginx-124:1-113
+podman pull registry.redhat.io/ubi9/nginx-126:9.8-1793065662
 
 # Build without authentication
 make openshift-build REGISTRY=quay.io/yourorg TAG=latest
