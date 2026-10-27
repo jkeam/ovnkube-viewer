@@ -2,6 +2,17 @@
 
 This directory contains OpenShift manifests for deploying the OVN-Kubernetes Trace Viewer using Kustomize.
 
+## Deployment Modes
+
+The application can be deployed in two modes:
+
+1. **Console Plugin Mode** (Recommended) - Integrates into OpenShift Console
+   - See [Console Plugin Guide](CONSOLE-PLUGIN-GUIDE.md)
+   - Quick start: [Console Plugin Quick Start](QUICKSTART-CONSOLE-PLUGIN.md)
+
+2. **Standalone Mode** - Accessed via dedicated Route
+   - See [Deployment Guide](DEPLOYMENT-GUIDE.md)
+
 ## Directory Structure
 
 ```

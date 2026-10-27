@@ -15,6 +15,9 @@ resources:
   - frontend-deployment.yaml
   - frontend-service.yaml
   - route.yaml
+  - console-plugin.yaml
+  - plugin-deployment.yaml
+  - plugin-service.yaml
 
 commonLabels:
   app: ovnkube-viewer
@@ -26,4 +29,7 @@ images:
     newTag: latest
   - name: ovnkube-viewer-frontend
     newName: quay.io/yourorg/ovnkube-viewer-frontend
+    newTag: latest
+  - name: ovnkube-viewer-plugin
+    newName: quay.io/yourorg/ovnkube-viewer-plugin
     newTag: latest

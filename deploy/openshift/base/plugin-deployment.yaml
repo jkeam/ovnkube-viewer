@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ovnkube-viewer-plugin
+  namespace: ovnkube-viewer
+  labels:
+    app: ovnkube-viewer
+    app.kubernetes.io/name: ovnkube-viewer
+    app.kubernetes.io/component: console-plugin
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ovnkube-viewer
+      component: console-plugin
+  template:
+    metadata:
+      labels:
+        app: ovnkube-viewer
+        component: console-plugin
+        app.kubernetes.io/name: ovnkube-viewer
+        app.kubernetes.io/component: console-plugin
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: plugin
+          image: ovnkube-viewer-plugin:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9443
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 101  # nginx user
+          livenessProbe:
+            httpGet:
+              path: /plugin-manifest.json
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /plugin-manifest.json
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"

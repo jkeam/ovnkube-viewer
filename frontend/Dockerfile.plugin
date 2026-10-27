@@ -1,0 +1,37 @@
+# Build stage
+FROM node:24-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the console plugin
+RUN npm run build:plugin
+
+# Runtime stage - serve the plugin with nginx
+FROM nginx:alpine
+
+# Copy custom nginx configuration for console plugin
+COPY nginx.plugin.conf /etc/nginx/nginx.conf
+
+# Copy plugin artifacts
+COPY --from=builder /app/dist/plugin /usr/share/nginx/html
+
+# Create plugin manifest directory
+RUN mkdir -p /usr/share/nginx/html/plugin-manifest.json
+
+# Expose plugin port (standard for console plugins)
+EXPOSE 9443
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:9443/plugin-manifest.json || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

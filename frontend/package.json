@@ -10,28 +10,55 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:plugin": "NODE_ENV=production webpack",
+    "build:standalone": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "http-server": "http-server dist/plugin -p 9001 --cors"
   },
   "dependencies": {
+    "@openshift-console/dynamic-plugin-sdk": "^1.3.0",
+    "@openshift-console/dynamic-plugin-sdk-webpack": "^1.3.0",
     "@patternfly/patternfly": "^5.4.1",
     "@patternfly/react-core": "^5.4.1",
     "@patternfly/react-icons": "^5.4.0",
     "@patternfly/react-table": "^5.4.1",
     "axios": "^1.7.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
     "@vitejs/plugin-react": "^4.3.1",
+    "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.10.0",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
+    "http-server": "^14.1.1",
+    "mini-css-extract-plugin": "^2.8.1",
+    "style-loader": "^3.3.4",
+    "ts-loader": "^9.5.1",
     "typescript": "^5.2.2",
-    "vite": "^5.3.1"
+    "vite": "^5.3.1",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4"
+  },
+  "consolePlugin": {
+    "name": "ovnkube-viewer",
+    "version": "0.1.0",
+    "displayName": "OVN Trace Viewer",
+    "description": "Visual viewer for OVN-Kubernetes traffic tracing",
+    "exposedModules": {
+      "OVNTraceViewerPage": "./src/plugin/OVNTraceViewerPage"
+    },
+    "dependencies": {
+      "@console/pluginAPI": "*"
+    }
   }
 }

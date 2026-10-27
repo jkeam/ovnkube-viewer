@@ -61,3 +61,5 @@ images:
     newTag: dev
   - name: quay.io/yourorg/ovnkube-viewer-frontend
     newTag: dev
+  - name: quay.io/yourorg/ovnkube-viewer-plugin
+    newTag: dev

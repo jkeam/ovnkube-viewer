@@ -47,6 +47,9 @@ ACTIONS:
     status          Check deployment status
     logs            Tail backend logs
     delete          Delete deployment from OpenShift
+    enable-plugin   Enable the console plugin
+    disable-plugin  Disable the console plugin
+    plugin-status   Check console plugin status
     help            Show this help message
 
 OPTIONS:
@@ -226,10 +229,24 @@ delete_deployment() {
     log_info "Deployment deleted ✓"
 }
 
+enable_plugin() {
+    log_info "Enabling console plugin..."
+    "${SCRIPT_DIR}/enable-plugin.sh" enable
+}
+
+disable_plugin() {
+    log_info "Disabling console plugin..."
+    "${SCRIPT_DIR}/enable-plugin.sh" disable
+}
+
+plugin_status() {
+    "${SCRIPT_DIR}/enable-plugin.sh" status
+}
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        deploy|build|push|validate|apply|status|logs|delete|help)
+        deploy|build|push|validate|apply|status|logs|delete|enable-plugin|disable-plugin|plugin-status|help)
             ACTION="$1"
             shift
             ;;
@@ -306,6 +323,18 @@ case $ACTION in
     delete)
         check_prerequisites
         delete_deployment
+        ;;
+    enable-plugin)
+        check_prerequisites
+        enable_plugin
+        ;;
+    disable-plugin)
+        check_prerequisites
+        disable_plugin
+        ;;
+    plugin-status)
+        check_prerequisites
+        plugin_status
         ;;
     help|"")
         print_usage

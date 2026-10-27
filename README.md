@@ -54,11 +54,14 @@ See [Getting Started Guide](docs/getting-started.md) for setup instructions and 
 - Scheduled tracing
 - Topology caching
 
-### Phase 4: OpenShift Console Plugin
-- Integrated into OpenShift web console
-- PatternFly UI components
-- One-click tracing from resource pages
-- Native console authentication
+### Phase 4: OpenShift Console Plugin ✅
+- ✅ Integrated into OpenShift web console
+- ✅ PatternFly UI components
+- ✅ Dynamic plugin SDK integration
+- ✅ Native console authentication
+- ✅ Appears in "Observe" menu
+- 🚧 One-click tracing from resource pages
+- 🚧 Deep linking from pod/service pages
 
 ## Architecture
 
@@ -124,18 +127,42 @@ See [Getting Started Guide](docs/getting-started.md) for detailed instructions.
 
 ## OpenShift Deployment
 
-Deploy to OpenShift with Kustomize:
+Deploy to OpenShift in two modes:
+
+### 1. Console Plugin Mode (Recommended)
+
+Integrate directly into the OpenShift web console:
+
+```bash
+# Build and deploy
+make openshift-build openshift-push openshift-deploy OVERLAY=dev REGISTRY=quay.io/yourorg TAG=latest
+
+# Enable the plugin in OpenShift Console
+cd deploy/openshift
+./enable-plugin.sh enable
+
+# Access via: OpenShift Console → Observe → OVN Trace Viewer
+```
+
+**Benefits:**
+- Native console integration
+- Shared authentication
+- Appears in "Observe" menu
+- Consistent UI/UX
+
+See [Console Plugin Guide](deploy/openshift/CONSOLE-PLUGIN-GUIDE.md) for complete instructions.
+
+### 2. Standalone Mode
+
+Deploy as a separate application with its own route:
 
 ```bash
 # Quick deploy to development
 cd deploy/openshift
 ./deploy.sh deploy -o dev -r quay.io/yourorg -t latest
 
-# Or using Make
-make openshift-build openshift-push openshift-deploy OVERLAY=dev REGISTRY=quay.io/yourorg TAG=latest
-
-# Check deployment status
-./deploy.sh status -o dev
+# Access via the generated route
+oc get route -n ovnkube-viewer-dev
 ```
 
 The application requires elevated permissions to access OVN components and trace network traffic. See [OpenShift Deployment Guide](deploy/openshift/DEPLOYMENT-GUIDE.md) for:
@@ -146,6 +173,7 @@ The application requires elevated permissions to access OVN components and trace
 - Troubleshooting guide
 
 **Quick Links:**
+- [Console Plugin Guide](deploy/openshift/CONSOLE-PLUGIN-GUIDE.md) - **New!** Console integration guide
 - [OpenShift README](deploy/openshift/README.md) - Architecture and configuration
 - [Deployment Guide](deploy/openshift/DEPLOYMENT-GUIDE.md) - Step-by-step deployment
 - [Kustomize Base](deploy/openshift/base/) - Base manifests

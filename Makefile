@@ -23,8 +23,11 @@ frontend-install: ## Install frontend dependencies
 frontend-dev: ## Run frontend in development mode
 	cd frontend && npm run dev
 
-frontend-build: ## Build frontend for production
-	cd frontend && npm run build
+frontend-build: ## Build frontend for production (standalone)
+	cd frontend && npm run build:standalone
+
+frontend-build-plugin: ## Build frontend as console plugin
+	cd frontend && npm run build:plugin
 
 # Docker targets
 docker-build: ## Build Docker images
@@ -73,10 +76,12 @@ OVERLAY ?= dev
 openshift-build: ## Build container images for OpenShift
 	podman build -t $(BACKEND_IMAGE):$(TAG) -f backend/Dockerfile backend
 	podman build -t $(FRONTEND_IMAGE):$(TAG) -f frontend/Dockerfile frontend
+	podman build -t $(REGISTRY)/ovnkube-viewer-plugin:$(TAG) -f frontend/Dockerfile.plugin frontend
 
 openshift-push: ## Push container images to registry
 	podman push $(BACKEND_IMAGE):$(TAG)
 	podman push $(FRONTEND_IMAGE):$(TAG)
+	podman push $(REGISTRY)/ovnkube-viewer-plugin:$(TAG)
 
 openshift-validate: ## Validate Kustomize manifests
 	@echo "Validating $(OVERLAY) overlay..."

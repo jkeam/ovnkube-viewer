@@ -1,0 +1,22 @@
+[
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "id": "ovnkube-viewer",
+      "name": "OVN Trace Viewer",
+      "href": "/ovn-trace-viewer",
+      "section": "observe",
+      "insertAfter": "monitoring"
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
+      "path": "/ovn-trace-viewer",
+      "component": {
+        "$codeRef": "OVNTraceViewerPage"
+      }
+    }
+  }
+]

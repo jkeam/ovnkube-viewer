@@ -1,0 +1,23 @@
+apiVersion: console.openshift.io/v1
+kind: ConsolePlugin
+metadata:
+  name: ovnkube-viewer
+  labels:
+    app: ovnkube-viewer
+    app.kubernetes.io/name: ovnkube-viewer
+    app.kubernetes.io/component: console-plugin
+spec:
+  displayName: 'OVN Trace Viewer'
+  service:
+    name: ovnkube-viewer-plugin
+    namespace: ovnkube-viewer
+    port: 9443
+    basePath: /
+  proxy:
+    - type: Service
+      alias: ovnkube-viewer-backend
+      authorize: true
+      service:
+        name: ovnkube-viewer-backend
+        namespace: ovnkube-viewer
+        port: 8080

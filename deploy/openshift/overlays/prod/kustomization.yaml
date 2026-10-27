@@ -79,3 +79,5 @@ images:
     newTag: v1.0.0
   - name: quay.io/yourorg/ovnkube-viewer-frontend
     newTag: v1.0.0
+  - name: quay.io/yourorg/ovnkube-viewer-plugin
+    newTag: v1.0.0
