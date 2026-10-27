@@ -1,3 +1,3 @@
 module github.com/jkeam/ovnkube-viewer
 
-go 1.27.3
+go 1.26.10

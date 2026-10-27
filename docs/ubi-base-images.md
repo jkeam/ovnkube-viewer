@@ -66,7 +66,7 @@ We use **ubi-micro** for the runtime as our Go binary is statically compiled.
 
 **Image:** `registry.redhat.io/ubi9/go-toolset:9.8-1793107762`
 
-- **Go Version:** 1.21.x
+- **Go Version:** 1.26.10 (Red Hat 1.26.10-1.el9_8)
 - **Base:** RHEL 9
 - **User:** Non-root (UID 1001)
 - **Workdir:** `/opt/app-root/src`

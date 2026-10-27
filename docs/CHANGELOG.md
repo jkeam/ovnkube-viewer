@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- **Go version requirement updated to 1.26.10** - Matches the Go version in UBI9 go-toolset:9.8
+  - Updated `backend/go.mod` from 1.27.3 to 1.26.10
+  - Go 1.26.10 is Red Hat's version (Red Hat 1.26.10-1.el9_8)
+
 - **All containers rebased to Red Hat UBI9** - All Dockerfiles now use Red Hat Universal Base Images:
   
   **Backend:**
