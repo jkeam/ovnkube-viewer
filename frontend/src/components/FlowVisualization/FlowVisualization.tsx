@@ -71,11 +71,11 @@ function FlowVisualization({ result, onToggleDrawer, isDrawerOpen }: FlowVisuali
       case 'switch':
         return 'var(--pf-v5-global--primary-color--100)'
       case 'router':
-        return 'var(--pf-v5-global--danger-color--100)'
+        return 'var(--pf-v5-global--palette--cyan-400)'
       case 'port':
         return 'var(--pf-v5-global--palette--purple-400)'
       case 'acl':
-        return 'var(--pf-v5-global--warning-color--100)'
+        return 'var(--pf-v5-global--palette--gold-400)'
       default:
         return 'var(--pf-v5-global--Color--200)'
     }
@@ -180,8 +180,7 @@ function FlowVisualization({ result, onToggleDrawer, isDrawerOpen }: FlowVisuali
 
                 {result.topology.edges.length > 0 && (
                   <>
-                    <br />
-                    <TextContent>
+                    <TextContent style={{ marginTop: 'var(--pf-v5-global--spacer--md)' }}>
                       <Text component={TextVariants.h4}>Connections</Text>
                     </TextContent>
                     <List isPlain>

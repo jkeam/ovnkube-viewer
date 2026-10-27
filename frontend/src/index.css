@@ -1,15 +1,7 @@
 /* PatternFly CSS is imported in main.tsx */
 
-/* Global resets - PatternFly handles most of this */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
   margin: 0;
-  font-family: "RedHatDisplay", "Overpass", overpass, helvetica, arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

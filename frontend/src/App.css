@@ -44,10 +44,7 @@
   padding: 0;
 }
 
-/* Masthead customization */
-.pf-v5-c-masthead {
-  background: linear-gradient(135deg, #ee0000 0%, #c00 100%);
-}
+/* Masthead uses default PatternFly styling */
 
 /* Empty state centering */
 .pf-v5-c-empty-state {
