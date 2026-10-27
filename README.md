@@ -14,7 +14,7 @@ This project provides a graphical interface to visualize network traffic flow th
 
 🚀 **Phase 1 MVP - In Development** - Basic standalone application is scaffolded and ready for development!
 
-See [GETTING_STARTED.md](GETTING_STARTED.md) for setup instructions and [Implementation Plan](docs/implementation-plan.md) for detailed roadmap.
+See [Getting Started Guide](docs/getting-started.md) for setup instructions and [Implementation Plan](docs/implementation-plan.md) for detailed roadmap.
 
 ### Current Implementation Status
 
@@ -118,20 +118,15 @@ make frontend-dev    # Terminal 2
 
 Then open http://localhost:3000 in your browser.
 
-See [GETTING_STARTED.md](GETTING_STARTED.md) for detailed instructions.
+See [Getting Started Guide](docs/getting-started.md) for detailed instructions.
 
 ## Documentation
 
-- [Getting Started Guide](GETTING_STARTED.md) - Setup and development instructions
-- [Run Script Guide](RUN_SCRIPT_GUIDE.md) - run.sh command reference
-- [Node.js Upgrade Guide](NODE_UPGRADE.md) - How to upgrade to Node.js 24 LTS
-- [PatternFly Design](PATTERNFLY_DESIGN.md) - Design system implementation
-- [Phase 1 Status](PHASE1_STATUS.md) - Current progress and next steps
+- [Getting Started Guide](docs/getting-started.md) - Setup and development instructions
+- [Run Script Guide](docs/run-script-guide.md) - run.sh command reference
+- [Node.js Upgrade Guide](docs/node-upgrade.md) - How to upgrade to Node.js 24 LTS
+- [PatternFly Design System](docs/patternfly.md) - Design system implementation
 - [Implementation Plan](docs/implementation-plan.md) - Comprehensive development roadmap
-- [AGENT.md](AGENT.md) - Context for AI agents working on this project
-- [Architecture](docs/architecture.md) - Technical architecture details (coming soon)
-- [User Guide](docs/user-guide.md) - How to use the viewer (coming soon)
-- [Development Guide](docs/development.md) - Contributing and development setup (coming soon)
 
 ## Reference
 

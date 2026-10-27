@@ -1,14 +1,55 @@
-# PatternFly Design System Implementation
+# PatternFly Design System
 
-This document outlines how the OVN-Kubernetes Trace Viewer follows PatternFly and Red Hat UX design principles.
+This document covers the PatternFly 5.4 design system implementation for the OVN-Kubernetes Trace Viewer.
 
-## Design System References
+## Quick Setup
+
+### Installation
+
+```bash
+# Recommended: Use the run script
+./run.sh init
+
+# Or manually
+cd frontend
+npm install
+```
+
+This installs:
+- `@patternfly/react-core@^5.4.1` - Core components
+- `@patternfly/react-icons@^5.4.0` - Icon library
+- `@patternfly/react-table@^5.4.1` - Table components
+- `@patternfly/patternfly@^5.4.1` - CSS framework
+
+### Running the Application
+
+```bash
+# Development mode with hot reload
+./run.sh dev
+
+# Or with Docker
+./run.sh docker
+```
+
+Open http://localhost:3000 to see the PatternFly-styled UI.
+
+## Design System Overview
+
+### Why PatternFly?
+
+1. **OpenShift Alignment** - Phase 4 will be an OpenShift console plugin; using PatternFly now enables component reuse
+2. **Enterprise Ready** - WCAG 2.1 AA accessible, professional design
+3. **Comprehensive** - 100+ components, 700+ icons, established patterns
+4. **Red Hat Standard** - Consistent with OpenShift user experience
+5. **Well Maintained** - Active development, regular updates
+
+### Design References
 
 - **PatternFly**: https://www.patternfly.org/
 - **Red Hat UX**: https://ux.redhat.com/
 - **PatternFly React**: https://www.patternfly.org/get-started/develop#react
 
-## Component Usage
+## Component Architecture
 
 ### Layout Components
 
@@ -24,8 +65,6 @@ This document outlines how the OVN-Kubernetes Trace Viewer follows PatternFly an
   </Drawer>
 </Page>
 ```
-
-**Why**: PatternFly's Page component provides consistent header, navigation, and content structure. The Drawer component enables a collapsible configuration panel without losing context.
 
 **Red Hat UX Principle**: *Progressive Disclosure* - Show configuration when needed, hide when focusing on visualization.
 
@@ -44,8 +83,6 @@ This document outlines how the OVN-Kubernetes Trace Viewer follows PatternFly an
   </MastheadContent>
 </Masthead>
 ```
-
-**Why**: Consistent branding and navigation across Red Hat products.
 
 **Red Hat UX Principle**: *Consistency* - Users familiar with OpenShift will recognize the layout.
 
@@ -97,8 +134,6 @@ This document outlines how the OVN-Kubernetes Trace Viewer follows PatternFly an
 </Card>
 ```
 
-**Why**: Cards provide visual containment and hierarchy. ReactFlow integrates with PatternFly styling.
-
 #### Flow Steps Timeline
 ```tsx
 <Timeline>
@@ -113,16 +148,11 @@ This document outlines how the OVN-Kubernetes Trace Viewer follows PatternFly an
 </Timeline>
 ```
 
-**Components Used**:
-- `Timeline` - Sequential step visualization
-- `Badge` - Highlight key information (action, protocol)
-- `Text` - Typography components with semantic variants
-
 **Red Hat UX Principle**: *Understandability* - Timeline shows clear progression of packet flow.
 
 ### Status & Feedback
 
-#### Trace Status
+#### Status Labels
 ```tsx
 <Label icon={<CheckCircleIcon />} color="green">
   SUCCESS
@@ -133,8 +163,6 @@ This document outlines how the OVN-Kubernetes Trace Viewer follows PatternFly an
 - ✅ Success → Green label with CheckCircleIcon
 - ❌ Dropped → Red label with TimesCircleIcon  
 - ⚠️ Error → Orange label with ExclamationCircleIcon
-
-**Red Hat UX Principle**: *Feedback* - Immediate visual indication of trace result.
 
 #### Loading States
 ```tsx
@@ -149,8 +177,6 @@ This document outlines how the OVN-Kubernetes Trace Viewer follows PatternFly an
 </EmptyState>
 ```
 
-**Red Hat UX Principle**: *Responsiveness* - Always show system state, never leave user wondering.
-
 #### Error Handling
 ```tsx
 <Alert
@@ -162,13 +188,13 @@ This document outlines how the OVN-Kubernetes Trace Viewer follows PatternFly an
 </Alert>
 ```
 
-**Red Hat UX Principle**: *Error Prevention & Recovery* - Clear error messages with dismissal action.
+## Visual Design
 
-## Color Palette
+### Color Palette
 
 Following PatternFly's color system:
 
-### Node Type Colors
+#### Node Type Colors
 ```css
 --switch-color: #06c;      /* PatternFly blue-400 */
 --router-color: #a30000;   /* PatternFly red-200 */
@@ -177,7 +203,7 @@ Following PatternFly's color system:
 --default-color: #6a6e73;  /* PatternFly grey-600 */
 ```
 
-### Status Colors
+#### Status Colors
 ```css
 --success: var(--pf-v5-global--success-color--100);  /* Green */
 --danger: var(--pf-v5-global--danger-color--100);    /* Red */
@@ -189,39 +215,27 @@ Following PatternFly's color system:
 - Theme consistency
 - Dark mode support (future)
 
-## Typography
+### Typography
 
-### Font Stack
+#### Font Stack
 ```css
 font-family: "RedHatDisplay", "Overpass", overpass, helvetica, arial, sans-serif;
 ```
 
-**Red Hat Display** - Primary font for headings and UI
-**Overpass** - Fallback sans-serif
-
-### Text Components
+#### Text Components
 ```tsx
 <Text component={TextVariants.h1}>Main Title</Text>
 <Text component={TextVariants.p}>Body text</Text>
 <Text component={TextVariants.small}>Helper text</Text>
 ```
 
-**Why**: Semantic HTML with consistent sizing and spacing.
-
-## Spacing & Layout
+### Spacing & Layout
 
 PatternFly uses an 8px grid system:
 - Spacing tokens: `--pf-v5-global--spacer--{xs|sm|md|lg|xl}`
 - Components automatically apply consistent spacing
 
-### Grid Layout
-```tsx
-<Split hasGutter>
-  <SplitItem>Source</SplitItem>
-  <SplitItem>→</SplitItem>
-  <SplitItem>Destination</SplitItem>
-</Split>
-```
+**Spacing scale**: xs (4px), sm (8px), md (16px), lg (24px), xl (32px)
 
 ## Responsive Design
 
@@ -260,31 +274,24 @@ PatternFly uses an 8px grid system:
 ✅ **Focus Indicators**
 - PatternFly provides visible focus rings
 
-### Testing
+### Testing Accessibility
+
+#### Keyboard Navigation
+1. Press `Tab` to navigate between elements
+2. Press `Enter` or `Space` to activate buttons
+3. Press `Esc` to close drawer/modals
+
+#### Screen Reader
+1. Enable VoiceOver (Mac): `Cmd + F5`
+2. Enable NVDA (Windows): Install from nvda.org
+3. Navigate with `Tab` and arrow keys
+4. All form fields should announce their labels
+
+#### Automated Testing
 ```bash
-# Run accessibility audit
 npm run build
 npx pa11y-ci http://localhost:3000
 ```
-
-## Interaction Patterns
-
-### Primary Action Flow
-1. **User opens app** → Empty state with clear instructions
-2. **User configures trace** → Drawer panel with form
-3. **User submits** → Loading spinner with message
-4. **Trace completes** → Results with status indicator
-5. **User explores** → Interactive graph + timeline
-
-### Progressive Disclosure
-- Configuration panel can be collapsed
-- Focus on visualization when not configuring
-- Toggle button to re-open panel
-
-### Feedback Loop
-- Loading states during async operations
-- Success/error alerts with clear messaging
-- Status badges throughout UI
 
 ## Component Inventory
 
@@ -320,37 +327,90 @@ npx pa11y-ci http://localhost:3000
 ### Icons
 - ✅ @patternfly/react-icons (700+ icons)
 
-## Design Principles Applied
+## Customization
 
-### 1. Consistency
-**Applied**: Using PatternFly components ensures visual and behavioral consistency with OpenShift console and other Red Hat products.
+### Custom Colors
 
-**Example**: Masthead layout, form patterns, button styles all match OpenShift UX.
+Override PatternFly colors in `src/App.css`:
 
-### 2. Clarity
-**Applied**: Clear labeling, helper text, and status indicators.
+```css
+/* Custom masthead color */
+.pf-v5-c-masthead {
+  background: linear-gradient(135deg, #ee0000 0%, #c00 100%);
+}
 
-**Example**: Each form field has a label and helper text explaining what to enter.
+/* Custom node colors */
+.react-flow__node.switch {
+  background: #06c; /* PatternFly blue */
+}
+```
 
-### 3. Efficiency
-**Applied**: Minimal clicks, logical grouping, keyboard shortcuts.
+### Custom Spacing
 
-**Example**: Form sections group related fields. Primary action is a single button.
+```tsx
+<div style={{ padding: 'var(--pf-v5-global--spacer--md)' }}>
+  {/* 16px padding */}
+</div>
+```
 
-### 4. Feedback
-**Applied**: Loading states, success/error alerts, status badges.
+## Troubleshooting
 
-**Example**: Spinner during trace execution, Alert on error, Label showing trace status.
+### PatternFly CSS not loading
 
-### 5. Accessibility
-**Applied**: Semantic HTML, ARIA labels, keyboard navigation, color contrast.
+**Symptom**: Unstyled components, no red header
 
-**Example**: All form fields have proper labels, focus indicators, screen reader support.
+**Fix**:
+```tsx
+// Check src/main.tsx has imports
+import '@patternfly/patternfly/patternfly.css'
+import '@patternfly/patternfly/patternfly-addons.css'
+```
 
-### 6. Progressive Disclosure
-**Applied**: Collapsible drawer, empty states, timeline expansion.
+### Components not rendering
 
-**Example**: Configuration panel can be hidden to focus on visualization.
+**Symptom**: Blank screen, console errors
+
+**Fix**:
+```bash
+cd frontend
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Icons missing
+
+**Symptom**: No icons showing
+
+**Fix**:
+```tsx
+// Check imports
+import { PlayIcon, CheckCircleIcon } from '@patternfly/react-icons'
+```
+
+## Browser Support
+
+PatternFly 5 supports:
+- ✅ Chrome/Edge (latest)
+- ✅ Firefox (latest)
+- ✅ Safari (latest)
+- ⚠️ IE 11 (not supported)
+
+## Testing Checklist
+
+- [ ] Header displays with red gradient
+- [ ] Logo and title visible
+- [ ] Drawer opens and closes
+- [ ] Form fields accept input
+- [ ] Helper text displays
+- [ ] Execute button enabled/disabled based on form validity
+- [ ] Loading spinner shows during trace
+- [ ] Error alert displays on failure
+- [ ] Success status badge shows on success
+- [ ] Graph renders in card
+- [ ] Timeline shows flow steps
+- [ ] Responsive layout works (resize window)
+- [ ] Keyboard navigation works (tab through form)
+- [ ] Focus indicators visible
 
 ## Future Enhancements
 
@@ -358,7 +418,7 @@ npx pa11y-ci http://localhost:3000
 - [ ] Data table for trace history
 - [ ] Pagination for large datasets
 - [ ] Advanced filters
-- [ ] Export functionality (PatternFly button group)
+- [ ] Export functionality
 
 ### Phase 3 Additions
 - [ ] Tabs for multiple traces
@@ -378,6 +438,7 @@ npx pa11y-ci http://localhost:3000
 - [Components](https://www.patternfly.org/components/all-components)
 - [Design Guidelines](https://www.patternfly.org/design-guidelines/styles/colors)
 - [Accessibility](https://www.patternfly.org/accessibility/accessibility-fundamentals)
+- [Icon Finder](https://www.patternfly.org/design-foundations/icons)
 
 ### Red Hat UX
 - [Design System](https://ux.redhat.com/)
@@ -388,8 +449,12 @@ npx pa11y-ci http://localhost:3000
 - [PatternFly React Seed](https://github.com/patternfly/patternfly-react-seed)
 - [OpenShift Console](https://github.com/openshift/console)
 
+### Project Documentation
+- [Getting Started Guide](getting-started.md)
+- [Implementation Plan](implementation-plan.md)
+- [Run Script Guide](run-script-guide.md)
+
 ---
 
-**Updated**: October 26, 2026  
 **PatternFly Version**: 5.4.1  
-**Compliant With**: Red Hat UX Design System
+**Compliant With**: Red Hat UX Design System, WCAG 2.1 AA

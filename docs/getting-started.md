@@ -252,10 +252,10 @@ ovnkube-viewer/
 
 ## Resources
 
-- [Implementation Plan](docs/implementation-plan.md)
+- [Implementation Plan](implementation-plan.md)
 - [OVN-Kubernetes Tracing Docs](https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html/ovn-kubernetes_network_plugin/ovn-kubernetes-tracing-using-ovntrace)
 - [ReactFlow Docs](https://reactflow.dev/)
 
 ## Contributing
 
-See the main [README.md](README.md) for contribution guidelines.
+See the main [README.md](../README.md) for contribution guidelines.
