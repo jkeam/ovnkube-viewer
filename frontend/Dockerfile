@@ -4,10 +4,10 @@ FROM registry.redhat.io/ubi9/nodejs-24:9.8-1793067767 AS builder
 # Set working directory
 WORKDIR /opt/app-root/src
 
-# Copy package files
-COPY package*.json ./
+# Copy package files (including package-lock.json for reproducible builds)
+COPY package.json package-lock.json ./
 
-# Install dependencies
+# Install dependencies with clean install
 RUN npm ci
 
 # Copy source code
