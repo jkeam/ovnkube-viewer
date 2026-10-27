@@ -44,6 +44,24 @@ patches:
         path: /subjects/0/namespace
         value: ovnkube-viewer-dev
 
+  # Update ConsolePlugin namespace and service name references
+  - target:
+      kind: ConsolePlugin
+      name: ovnkube-viewer
+    patch: |-
+      - op: replace
+        path: /spec/backend/service/name
+        value: dev-ovnkube-viewer-plugin
+      - op: replace
+        path: /spec/backend/service/namespace
+        value: ovnkube-viewer-dev
+      - op: replace
+        path: /spec/proxy/0/endpoint/service/name
+        value: dev-ovnkube-viewer-backend
+      - op: replace
+        path: /spec/proxy/0/endpoint/service/namespace
+        value: ovnkube-viewer-dev
+
   # Update ConfigMap for dev environment
   - target:
       kind: ConfigMap

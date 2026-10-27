@@ -8,16 +8,20 @@ metadata:
     app.kubernetes.io/component: console-plugin
 spec:
   displayName: 'OVN Trace Viewer'
-  service:
-    name: ovnkube-viewer-plugin
-    namespace: ovnkube-viewer
-    port: 9443
-    basePath: /
+  backend:
+    type: Service
+    service:
+      name: ovnkube-viewer-plugin
+      namespace: ovnkube-viewer
+      port: 9443
+      basePath: /
   proxy:
     - type: Service
       alias: ovnkube-viewer-backend
       authorize: true
-      service:
-        name: ovnkube-viewer-backend
-        namespace: ovnkube-viewer
-        port: 8080
+      endpoint:
+        type: Service
+        service:
+          name: ovnkube-viewer-backend
+          namespace: ovnkube-viewer
+          port: 8080
