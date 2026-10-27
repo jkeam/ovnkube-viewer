@@ -1,0 +1,82 @@
+# Go
+backend/bin/
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+backend/*.test
+backend/*.out
+backend/vendor/
+backend/coverage.txt
+backend/coverage.html
+
+# Frontend / Node
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/.cache/
+frontend/*.log
+frontend/.eslintcache
+frontend/package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing
+frontend/coverage/
+backend/coverage/
+*.cover
+*.coverage
+.nyc_output/
+test-results/
+playwright-report/
+.playwright-mcp/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.code-workspace
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# Docker
+.dockerignore
+*.dockerignore
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# OS
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+
+# Logs
+logs/
+*.log
+
+# Build artifacts
+dist/
+build/
+out/

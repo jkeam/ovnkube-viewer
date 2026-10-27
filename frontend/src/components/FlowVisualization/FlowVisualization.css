@@ -1,0 +1,65 @@
+/* Flow Visualization - PatternFly Only */
+
+.flow-visualization-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Toolbar at top - fixed height */
+.flow-visualization-container > .pf-v5-c-toolbar {
+  flex-shrink: 0;
+}
+
+/* Content area - takes remaining space */
+.flow-content-area {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--pf-v5-global--spacer--lg);
+  min-height: 500px; /* Ensure minimum visible height */
+}
+
+/* Topology Node Cards */
+.topology-node-card {
+  border-left: 4px solid var(--pf-v5-global--BorderColor--100);
+  transition: border-color 0.2s;
+}
+
+.topology-node-card:hover {
+  border-left-color: var(--pf-v5-global--primary-color--100);
+}
+
+.node-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Flow Step Cards */
+.flow-step-card {
+  border-left: 3px solid var(--pf-v5-global--primary-color--100);
+}
+
+.step-number {
+  font-weight: var(--pf-v5-global--FontWeight--bold);
+  min-width: 2rem;
+  text-align: center;
+}
+
+.packet-info {
+  font-family: var(--pf-v5-global--FontFamily--monospace);
+  color: var(--pf-v5-global--Color--200);
+  background: var(--pf-v5-global--BackgroundColor--200);
+  padding: var(--pf-v5-global--spacer--xs);
+  border-radius: var(--pf-v5-global--BorderRadius--sm);
+  display: inline-block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .flow-content-area {
+    padding: var(--pf-v5-global--spacer--sm);
+  }
+}

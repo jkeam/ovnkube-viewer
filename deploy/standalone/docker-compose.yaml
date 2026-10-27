@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: ovnkube-viewer-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    # Uncomment to mount OVN socket for actual ovn-trace execution
+    # volumes:
+    #   - /var/run/openvswitch:/var/run/openvswitch:ro
+    networks:
+      - ovnkube-viewer
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    container_name: ovnkube-viewer-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - ovnkube-viewer
+
+networks:
+  ovnkube-viewer:
+    driver: bridge

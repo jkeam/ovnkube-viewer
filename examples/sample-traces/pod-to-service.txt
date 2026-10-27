@@ -1,0 +1,38 @@
+# ovn-trace sample output: pod-to-service with load balancing
+# Source: client-pod (10.128.0.20) -> Destination: backend-svc (10.96.100.50)
+# Protocol: TCP, Port: 8080
+
+ingress(dp="ovn-cluster", inport="k8s-client-pod")
+ 0. ls_in_port_sec_l2: inport == "k8s-client-pod", priority 50
+    next;
+ 1. ls_in_port_sec_ip: inport == "k8s-client-pod" && ip4.src == 10.128.0.20, priority 90
+    next;
+ 2. ls_in_acl: ip, priority 1
+    next;
+ 3. ls_in_lb: ct.new && ip4.dst == 10.96.100.50 && tcp.dst == 8080, priority 100
+    ct_lb(backends=10.128.0.30:8080,10.128.0.31:8080,10.128.0.32:8080);
+    # Load balancer selected backend: 10.128.0.30:8080
+ 4. ls_in_l2_lkup: eth.dst == fa:16:3e:9a:de:f1, priority 50
+    outport = "rtos-ovn_cluster_router";
+    output;
+
+egress(dp="ovn-cluster", outport="rtos-ovn_cluster_router")
+ 5. ls_out_port_sec_l2: outport == "rtos-ovn_cluster_router", priority 50
+    output;
+
+ingress(dp="ovn_cluster_router", inport="rtos-ovn_cluster_router")
+ 6. lr_in_admission: inport == "rtos-ovn_cluster_router", priority 50
+    next;
+ 7. lr_in_ip_routing: ip4.dst == 10.128.0.30, priority 100
+    ip.ttl--;
+    reg0 = 10.128.0.30;
+    reg1 = 10.128.0.1;
+    eth.src = fa:16:3e:ab:cd:12;
+    outport = "rtos-backend-pod-1";
+    next;
+
+egress(dp="ovn_cluster_router", outport="rtos-backend-pod-1")
+ 8. lr_out_delivery: outport == "rtos-backend-pod-1", priority 100
+    output;
+
+Packet delivered to backend pod 10.128.0.30 via service load balancer

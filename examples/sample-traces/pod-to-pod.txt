@@ -1,0 +1,22 @@
+# ovn-trace sample output: pod-to-pod within same namespace
+# Source: web-pod (10.128.0.5) -> Destination: db-pod (10.128.0.10)
+# Protocol: TCP, Port: 5432
+
+ingress(dp="ovn-cluster", inport="k8s-web-pod")
+ 0. ls_in_port_sec_l2 (ovn-northd.c:5123): inport == "k8s-web-pod", priority 50
+    next;
+ 1. ls_in_port_sec_ip (ovn-northd.c:3690): inport == "k8s-web-pod" && eth.src == fa:16:3e:5a:bc:de && ip4.src == 10.128.0.5, priority 90
+    next;
+ 2. ls_in_acl (ovn-northd.c:4567): ip, priority 1
+    next;
+ 3. ls_in_arp_rsp (ovn-northd.c:6234): arp.op == 1 && arp.tpa == 10.128.0.10, priority 50
+    next;
+ 4. ls_in_l2_lkup (ovn-northd.c:7123): eth.dst == fa:16:3e:7b:cd:ef, priority 50
+    outport = "k8s-db-pod";
+    output;
+
+egress(dp="ovn-cluster", outport="k8s-db-pod")
+ 5. ls_out_port_sec_l2 (ovn-northd.c:5234): outport == "k8s-db-pod", priority 50
+    output;
+
+Packet delivered successfully to db-pod (10.128.0.10)
