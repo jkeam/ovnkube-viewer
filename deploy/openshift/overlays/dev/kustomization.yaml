@@ -8,8 +8,9 @@ namePrefix: dev-
 resources:
   - ../../base
 
-commonLabels:
-  environment: development
+labels:
+  - pairs:
+      environment: development
 
 patches:
   # Reduce replicas for dev environment
@@ -73,6 +74,15 @@ patches:
       - op: add
         path: /data/LOG_LEVEL
         value: "debug"
+
+  # Update Route service reference to match prefixed service name
+  - target:
+      kind: Route
+      name: ovnkube-viewer
+    patch: |-
+      - op: replace
+        path: /spec/to/name
+        value: dev-ovnkube-viewer-frontend
 
 images:
   - name: quay.io/jkeam0/ovnkube-viewer-backend

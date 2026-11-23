@@ -6,8 +6,9 @@ namespace: ovnkube-viewer
 resources:
   - ../../base
 
-commonLabels:
-  environment: production
+labels:
+  - pairs:
+      environment: production
 
 patches:
   # Increase replicas for production
