@@ -75,9 +75,9 @@ patches:
         value: "debug"
 
 images:
-  - name: quay.io/jkeam/ovnkube-viewer-backend
+  - name: quay.io/jkeam0/ovnkube-viewer-backend
     newTag: dev
-  - name: quay.io/jkeam/ovnkube-viewer-frontend
+  - name: quay.io/jkeam0/ovnkube-viewer-frontend
     newTag: dev
-  - name: quay.io/jkeam/ovnkube-viewer-plugin
+  - name: quay.io/jkeam0/ovnkube-viewer-plugin
     newTag: dev
