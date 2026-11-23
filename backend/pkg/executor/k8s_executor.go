@@ -79,6 +79,18 @@ func (e *K8sTraceExecutor) Execute(req *models.TraceRequest) (string, error) {
 		return "", fmt.Errorf("source and destination are required")
 	}
 
+	// Resolve source and destination to IP addresses if needed
+	sourceIP, err := e.resolveToIP(req.Source)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve source: %w", err)
+	}
+	destIP, err := e.resolveToIP(req.Destination)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve destination: %w", err)
+	}
+
+	fmt.Printf("INFO: Resolved source %s -> %s, destination %s -> %s\n", req.Source, sourceIP, req.Destination, destIP)
+
 	// Find an OVN node pod (which has access to OVN databases)
 	pod, err := e.findOVNNodePod()
 	if err != nil {
@@ -88,15 +100,15 @@ func (e *K8sTraceExecutor) Execute(req *models.TraceRequest) (string, error) {
 	fmt.Printf("INFO: Found OVN pod: %s in namespace %s\n", pod.Name, pod.Namespace)
 
 	// Find the logical switch and port for the source IP
-	switchName, portName, err := e.findLogicalSwitchAndPort(pod.Name, pod.Namespace, req.Source)
+	switchName, portName, err := e.findLogicalSwitchAndPort(pod.Name, pod.Namespace, sourceIP)
 	if err != nil {
 		fmt.Printf("ERROR: Failed to find logical switch/port for source IP %s: %v\n", req.Source, err)
 		return "", fmt.Errorf("failed to find logical switch/port for source IP: %w", err)
 	}
 	fmt.Printf("INFO: Found logical switch: %s, port: %s for source IP %s\n", switchName, portName, req.Source)
 
-	// Build the ovn-trace command
-	cmd := e.buildOVNTraceCommand(req, switchName, portName)
+	// Build the ovn-trace command with resolved IPs
+	cmd := e.buildOVNTraceCommand(sourceIP, destIP, req, switchName, portName)
 	fmt.Printf("INFO: Executing command: %v\n", cmd)
 
 	// Execute the command in the pod (use northd container which has access to OVN databases)
@@ -162,6 +174,76 @@ func (e *K8sTraceExecutor) findOVNNodePod() (*corev1.Pod, error) {
 	return nil, fmt.Errorf("no running OVN node pods found")
 }
 
+// resolveToIP resolves a pod/service identifier or IP address to an IP address
+func (e *K8sTraceExecutor) resolveToIP(identifier string) (string, error) {
+	// Check if it's already an IP address
+	if strings.Contains(identifier, ".") && !strings.Contains(identifier, "/") {
+		// Basic IP validation - if it looks like an IP, return it
+		parts := strings.Split(identifier, ".")
+		if len(parts) == 4 {
+			return identifier, nil
+		}
+	}
+
+	// Parse pod/namespace format: pod/name or namespace/pod/name
+	if strings.HasPrefix(identifier, "pod/") {
+		podName := strings.TrimPrefix(identifier, "pod/")
+		namespace := "default"
+
+		// Check if it includes namespace
+		if strings.Contains(podName, "/") {
+			parts := strings.SplitN(podName, "/", 2)
+			namespace = parts[0]
+			podName = parts[1]
+		}
+
+		// Get pod IP
+		pod, err := e.clientset.CoreV1().Pods(namespace).Get(context.TODO(), podName, metav1.GetOptions{})
+		if err != nil {
+			return "", fmt.Errorf("failed to get pod %s/%s: %w", namespace, podName, err)
+		}
+
+		if pod.Status.PodIP == "" {
+			return "", fmt.Errorf("pod %s/%s has no IP address", namespace, podName)
+		}
+
+		return pod.Status.PodIP, nil
+	}
+
+	// Parse service format: svc/name or namespace/svc/name
+	if strings.HasPrefix(identifier, "svc/") {
+		svcName := strings.TrimPrefix(identifier, "svc/")
+		namespace := "default"
+
+		// Check if it includes namespace
+		if strings.Contains(svcName, "/") {
+			parts := strings.SplitN(svcName, "/", 2)
+			namespace = parts[0]
+			svcName = parts[1]
+		}
+
+		// Get service cluster IP
+		svc, err := e.clientset.CoreV1().Services(namespace).Get(context.TODO(), svcName, metav1.GetOptions{})
+		if err != nil {
+			return "", fmt.Errorf("failed to get service %s/%s: %w", namespace, svcName, err)
+		}
+
+		if svc.Spec.ClusterIP == "" || svc.Spec.ClusterIP == "None" {
+			return "", fmt.Errorf("service %s/%s has no cluster IP", namespace, svcName)
+		}
+
+		return svc.Spec.ClusterIP, nil
+	}
+
+	// If no prefix, try to interpret as pod name in default namespace
+	pod, err := e.clientset.CoreV1().Pods("default").Get(context.TODO(), identifier, metav1.GetOptions{})
+	if err == nil && pod.Status.PodIP != "" {
+		return pod.Status.PodIP, nil
+	}
+
+	return "", fmt.Errorf("could not resolve %s to an IP address (use pod/name, svc/name, or an IP address)", identifier)
+}
+
 // findLogicalSwitchAndPort finds the logical switch and port for a given IP address
 func (e *K8sTraceExecutor) findLogicalSwitchAndPort(podName, namespace, ip string) (string, string, error) {
 	// Query ovn-nbctl to find the port with this IP address
@@ -223,7 +305,7 @@ func (e *K8sTraceExecutor) findLogicalSwitchAndPort(podName, namespace, ip strin
 }
 
 // buildOVNTraceCommand builds the ovn-trace command
-func (e *K8sTraceExecutor) buildOVNTraceCommand(req *models.TraceRequest, switchName, portName string) []string {
+func (e *K8sTraceExecutor) buildOVNTraceCommand(sourceIP, destIP string, req *models.TraceRequest, switchName, portName string) []string {
 	cmd := []string{"ovn-trace"}
 
 	// Add options
@@ -232,23 +314,23 @@ func (e *K8sTraceExecutor) buildOVNTraceCommand(req *models.TraceRequest, switch
 	// Use the logical switch as the datapath
 	cmd = append(cmd, switchName)
 
-	// Build packet specification with the actual port name
-	packetSpec := e.buildPacketSpec(req, portName)
+	// Build packet specification with the actual port name and resolved IPs
+	packetSpec := e.buildPacketSpec(sourceIP, destIP, req, portName)
 	cmd = append(cmd, packetSpec)
 
 	return cmd
 }
 
 // buildPacketSpec builds the packet specification for ovn-trace
-func (e *K8sTraceExecutor) buildPacketSpec(req *models.TraceRequest, portName string) string {
+func (e *K8sTraceExecutor) buildPacketSpec(sourceIP, destIP string, req *models.TraceRequest, portName string) string {
 	parts := []string{}
 
 	// Add inport with the actual port name from OVN database
 	parts = append(parts, fmt.Sprintf("inport==\"%s\"", portName))
 
-	// Add source and destination IPs
-	parts = append(parts, fmt.Sprintf("ip4.src==%s", req.Source))
-	parts = append(parts, fmt.Sprintf("ip4.dst==%s", req.Destination))
+	// Add source and destination IPs (resolved from pod/service names if needed)
+	parts = append(parts, fmt.Sprintf("ip4.src==%s", sourceIP))
+	parts = append(parts, fmt.Sprintf("ip4.dst==%s", destIP))
 
 	// Add protocol
 	proto := strings.ToLower(req.Protocol)
