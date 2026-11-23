@@ -12,14 +12,24 @@ import (
 
 // TraceHandler handles trace requests
 type TraceHandler struct {
-	executor *executor.TraceExecutor
+	executor executor.Executor
 	parser   *parser.Parser
 }
 
 // NewTraceHandler creates a new TraceHandler
 func NewTraceHandler() *TraceHandler {
+	// Try to create Kubernetes-based executor
+	k8sExecutor, err := executor.NewK8sTraceExecutor()
+	if err != nil {
+		// Fall back to local executor (which uses mock data)
+		return &TraceHandler{
+			executor: executor.NewTraceExecutor(),
+			parser:   parser.NewParser(),
+		}
+	}
+
 	return &TraceHandler{
-		executor: executor.NewTraceExecutor(),
+		executor: k8sExecutor,
 		parser:   parser.NewParser(),
 	}
 }
