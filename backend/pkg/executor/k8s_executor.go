@@ -107,8 +107,17 @@ func (e *K8sTraceExecutor) Execute(req *models.TraceRequest) (string, error) {
 	}
 	fmt.Printf("INFO: Found logical switch: %s, port: %s, MAC: %s for source IP %s\n", switchName, portName, sourceMac, req.Source)
 
-	// Build the ovn-trace command with resolved IPs and MAC address
-	cmd := e.buildOVNTraceCommand(sourceIP, destIP, sourceMac, req, switchName, portName)
+	// Find the MAC address for the destination IP
+	_, _, destMac, err := e.findLogicalSwitchPortAndMac(pod.Name, pod.Namespace, destIP)
+	if err != nil {
+		fmt.Printf("WARNING: Failed to find MAC for destination IP %s: %v\n", req.Destination, err)
+		destMac = "" // Continue without destination MAC
+	} else {
+		fmt.Printf("INFO: Found destination MAC: %s for destination IP %s\n", destMac, req.Destination)
+	}
+
+	// Build the ovn-trace command with resolved IPs and MAC addresses
+	cmd := e.buildOVNTraceCommand(sourceIP, destIP, sourceMac, destMac, req, switchName, portName)
 	fmt.Printf("INFO: Executing command: %v\n", cmd)
 
 	// Execute the command in the pod (use northd container which has access to OVN databases)
@@ -378,7 +387,7 @@ func (e *K8sTraceExecutor) extractMacFromAddresses(line string) string {
 }
 
 // buildOVNTraceCommand builds the ovn-trace command
-func (e *K8sTraceExecutor) buildOVNTraceCommand(sourceIP, destIP, sourceMac string, req *models.TraceRequest, switchName, portName string) []string {
+func (e *K8sTraceExecutor) buildOVNTraceCommand(sourceIP, destIP, sourceMac, destMac string, req *models.TraceRequest, switchName, portName string) []string {
 	cmd := []string{"ovn-trace"}
 
 	// Add options - use --detail to get full trace output for parsing
@@ -387,15 +396,15 @@ func (e *K8sTraceExecutor) buildOVNTraceCommand(sourceIP, destIP, sourceMac stri
 	// Use the logical switch as the datapath
 	cmd = append(cmd, switchName)
 
-	// Build packet specification with the actual port name, resolved IPs, and MAC address
-	packetSpec := e.buildPacketSpec(sourceIP, destIP, sourceMac, req, portName)
+	// Build packet specification with the actual port name, resolved IPs, and MAC addresses
+	packetSpec := e.buildPacketSpec(sourceIP, destIP, sourceMac, destMac, req, portName)
 	cmd = append(cmd, packetSpec)
 
 	return cmd
 }
 
 // buildPacketSpec builds the packet specification for ovn-trace
-func (e *K8sTraceExecutor) buildPacketSpec(sourceIP, destIP, sourceMac string, req *models.TraceRequest, portName string) string {
+func (e *K8sTraceExecutor) buildPacketSpec(sourceIP, destIP, sourceMac, destMac string, req *models.TraceRequest, portName string) string {
 	parts := []string{}
 
 	// Add inport with the actual port name from OVN database
@@ -404,6 +413,11 @@ func (e *K8sTraceExecutor) buildPacketSpec(sourceIP, destIP, sourceMac string, r
 	// Add source MAC address to pass port security checks
 	if sourceMac != "" {
 		parts = append(parts, fmt.Sprintf("eth.src==%s", sourceMac))
+	}
+
+	// Add destination MAC address to allow L2 forwarding and routing
+	if destMac != "" {
+		parts = append(parts, fmt.Sprintf("eth.dst==%s", destMac))
 	}
 
 	// Add source and destination IPs (resolved from pod/service names if needed)
