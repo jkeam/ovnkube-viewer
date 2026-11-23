@@ -79,11 +79,11 @@ func (e *K8sTraceExecutor) Execute(req *models.TraceRequest) (string, error) {
 		return "", fmt.Errorf("source and destination are required")
 	}
 
-	// Find an OVN master pod
-	pod, err := e.findOVNMasterPod()
+	// Find an OVN node pod (which has access to OVN databases)
+	pod, err := e.findOVNNodePod()
 	if err != nil {
-		fmt.Printf("ERROR: Failed to find OVN master pod: %v\n", err)
-		return "", fmt.Errorf("failed to find OVN master pod: %w", err)
+		fmt.Printf("ERROR: Failed to find OVN node pod: %v\n", err)
+		return "", fmt.Errorf("failed to find OVN node pod: %w", err)
 	}
 	fmt.Printf("INFO: Found OVN pod: %s in namespace %s\n", pod.Name, pod.Namespace)
 
@@ -91,8 +91,8 @@ func (e *K8sTraceExecutor) Execute(req *models.TraceRequest) (string, error) {
 	cmd := e.buildOVNTraceCommand(req)
 	fmt.Printf("INFO: Executing command: %v\n", cmd)
 
-	// Execute the command in the pod (use ovnkube-cluster-manager container)
-	output, err := e.execInPod(pod.Name, pod.Namespace, "ovnkube-cluster-manager", cmd)
+	// Execute the command in the pod (use northd container which has access to OVN databases)
+	output, err := e.execInPod(pod.Name, pod.Namespace, "northd", cmd)
 	if err != nil {
 		fmt.Printf("ERROR: Failed to execute ovn-trace: %v\n", err)
 		return "", fmt.Errorf("failed to execute ovn-trace: %w", err)
@@ -126,6 +126,32 @@ func (e *K8sTraceExecutor) findOVNMasterPod() (*corev1.Pod, error) {
 	}
 
 	return nil, fmt.Errorf("no running OVN master pods found")
+}
+
+// findOVNNodePod finds an available OVN node pod
+func (e *K8sTraceExecutor) findOVNNodePod() (*corev1.Pod, error) {
+	// Parse label selector
+	labelSelector := e.nodePodLabel
+
+	pods, err := e.clientset.CoreV1().Pods(e.ovnNamespace).List(context.TODO(), metav1.ListOptions{
+		LabelSelector: labelSelector,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list OVN node pods: %w", err)
+	}
+
+	if len(pods.Items) == 0 {
+		return nil, fmt.Errorf("no OVN node pods found with label %s in namespace %s", labelSelector, e.ovnNamespace)
+	}
+
+	// Find a running pod
+	for _, pod := range pods.Items {
+		if pod.Status.Phase == corev1.PodRunning {
+			return &pod, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no running OVN node pods found")
 }
 
 // buildOVNTraceCommand builds the ovn-trace command
