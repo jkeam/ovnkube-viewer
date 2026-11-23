@@ -28,7 +28,7 @@ spec:
       containers:
         - name: plugin
           image: ovnkube-viewer-plugin:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 9443
