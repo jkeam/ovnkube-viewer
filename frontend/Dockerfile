@@ -1,5 +1,5 @@
 # Build stage
-FROM registry.redhat.io/ubi9/nodejs-24:9.9-1795268857 AS builder
+FROM registry.access.redhat.com/ubi9/nodejs-24:9.9-1795268857 AS builder
 
 # Set working directory
 WORKDIR /opt/app-root/src
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build:standalone
 
 # Runtime stage - use UBI9 nginx
-FROM registry.redhat.io/ubi9/nginx-126:9.9-1795267041
+FROM registry.access.redhat.com/ubi9/nginx-126:9.9-1795267041
 
 # Copy built files to nginx
 COPY --from=builder /opt/app-root/src/dist /opt/app-root/src

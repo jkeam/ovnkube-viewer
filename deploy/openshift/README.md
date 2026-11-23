@@ -28,12 +28,21 @@ openshift/
 │   ├── frontend-deployment.yaml    # Frontend React app deployment
 │   ├── frontend-service.yaml       # Frontend service
 │   ├── route.yaml                  # OpenShift Route for external access
+│   ├── console-plugin.yaml         # Console plugin definition
+│   ├── plugin-deployment.yaml      # Console plugin deployment
+│   ├── plugin-service.yaml         # Console plugin service
 │   └── kustomization.yaml          # Base kustomization
 ├── overlays/
 │   ├── dev/                        # Development overlay
 │   │   └── kustomization.yaml
 │   └── prod/                       # Production overlay
 │       └── kustomization.yaml
+├── shipwright-builds.yaml          # Shipwright Build definitions (OpenShift Builds)
+├── shipwright-buildruns.yaml       # BuildRun templates to trigger builds
+├── deploy.sh                       # Deployment helper script
+├── enable-plugin.sh                # Console plugin enablement script
+├── DEPLOYMENT-GUIDE.md             # Comprehensive deployment guide
+├── CONSOLE-PLUGIN-GUIDE.md         # Console plugin integration guide
 └── README.md                       # This file
 ```
 

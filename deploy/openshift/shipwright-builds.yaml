@@ -6,6 +6,7 @@ metadata:
   namespace: ovnkube-viewer-dev
 spec:
   source:
+    type: Git
     git:
       url: https://github.com/jkeam/ovnkube-viewer.git
     contextDir: backend
@@ -24,6 +25,7 @@ metadata:
   namespace: ovnkube-viewer-dev
 spec:
   source:
+    type: Git
     git:
       url: https://github.com/jkeam/ovnkube-viewer.git
     contextDir: frontend
@@ -42,6 +44,7 @@ metadata:
   namespace: ovnkube-viewer-dev
 spec:
   source:
+    type: Git
     git:
       url: https://github.com/jkeam/ovnkube-viewer.git
     contextDir: frontend

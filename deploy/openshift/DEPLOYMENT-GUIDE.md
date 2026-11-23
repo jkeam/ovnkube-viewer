@@ -29,7 +29,8 @@ oc create secret docker-registry quay-push-secret \
 
 # 2. Build images on cluster with Shipwright
 oc apply -f deploy/openshift/shipwright-builds.yaml
-# Trigger builds (see "Building Images" section for details)
+oc create -f deploy/openshift/shipwright-buildruns.yaml
+# Monitor builds: oc get buildruns -n ovnkube-viewer-dev -w
 
 # 3. Deploy to OpenShift
 make openshift-deploy OVERLAY=dev
@@ -168,8 +169,15 @@ oc apply -f deploy/openshift/shipwright-builds.yaml
 
 **Step 4: Trigger builds**
 
+Option A - Using the BuildRun definitions file:
 ```bash
-# Build all three images
+# Trigger all three builds at once
+oc create -f deploy/openshift/shipwright-buildruns.yaml
+```
+
+Option B - Trigger builds individually with kubectl create:
+```bash
+# Backend
 oc create -n ovnkube-viewer-dev -f - <<EOF
 apiVersion: shipwright.io/v1beta1
 kind: BuildRun
@@ -180,6 +188,7 @@ spec:
     name: ovnkube-viewer-backend
 EOF
 
+# Frontend
 oc create -n ovnkube-viewer-dev -f - <<EOF
 apiVersion: shipwright.io/v1beta1
 kind: BuildRun
@@ -190,6 +199,7 @@ spec:
     name: ovnkube-viewer-frontend
 EOF
 
+# Plugin
 oc create -n ovnkube-viewer-dev -f - <<EOF
 apiVersion: shipwright.io/v1beta1
 kind: BuildRun

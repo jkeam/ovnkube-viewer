@@ -79,3 +79,4 @@ logs/
 dist/
 build/
 out/
+ignore/

@@ -1,5 +1,5 @@
 # Build stage
-FROM registry.redhat.io/ubi9/go-toolset:9.9-1795320499 AS builder
+FROM registry.access.redhat.com/ubi9/go-toolset:9.9-1795320499 AS builder
 
 # Set working directory
 WORKDIR /opt/app-root/src
@@ -18,7 +18,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/server
 
 # Runtime stage - use UBI9 micro for minimal footprint
-FROM registry.redhat.io/ubi9/ubi-micro:9.9-1794478307
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.9-1794478307
 
 # Set working directory
 WORKDIR /app

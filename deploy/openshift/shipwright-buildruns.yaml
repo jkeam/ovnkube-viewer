@@ -1,0 +1,27 @@
+---
+apiVersion: shipwright.io/v1beta1
+kind: BuildRun
+metadata:
+  generateName: backend-
+  namespace: ovnkube-viewer-dev
+spec:
+  build:
+    name: ovnkube-viewer-backend
+---
+apiVersion: shipwright.io/v1beta1
+kind: BuildRun
+metadata:
+  generateName: frontend-
+  namespace: ovnkube-viewer-dev
+spec:
+  build:
+    name: ovnkube-viewer-frontend
+---
+apiVersion: shipwright.io/v1beta1
+kind: BuildRun
+metadata:
+  generateName: plugin-
+  namespace: ovnkube-viewer-dev
+spec:
+  build:
+    name: ovnkube-viewer-plugin
