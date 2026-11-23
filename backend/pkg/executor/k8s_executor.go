@@ -110,8 +110,17 @@ func (e *K8sTraceExecutor) Execute(req *models.TraceRequest) (string, error) {
 	// Find the MAC address for the destination IP
 	_, _, destMac, err := e.findLogicalSwitchPortAndMac(pod.Name, pod.Namespace, destIP)
 	if err != nil {
-		fmt.Printf("WARNING: Failed to find MAC for destination IP %s: %v\n", req.Destination, err)
-		destMac = "" // Continue without destination MAC
+		// Destination not found on same node - likely cross-node traffic
+		// Use the router port MAC to enable routing through ovn_cluster_router
+		fmt.Printf("INFO: Destination not on same node, finding router port MAC for source switch %s\n", switchName)
+		routerMac, err := e.findRouterPortMac(pod.Name, pod.Namespace, switchName)
+		if err != nil {
+			fmt.Printf("WARNING: Failed to find router port MAC: %v\n", err)
+			destMac = ""
+		} else {
+			destMac = routerMac
+			fmt.Printf("INFO: Using router port MAC: %s for cross-node routing\n", destMac)
+		}
 	} else {
 		fmt.Printf("INFO: Found destination MAC: %s for destination IP %s\n", destMac, req.Destination)
 	}
@@ -384,6 +393,39 @@ func (e *K8sTraceExecutor) extractMacFromAddresses(line string) string {
 	}
 
 	return ""
+}
+
+// findRouterPortMac finds the MAC address of the router port for a given logical switch
+func (e *K8sTraceExecutor) findRouterPortMac(podName, namespace, switchName string) (string, error) {
+	// Find the router port name for this switch
+	// Format: rtos-<switch-name>
+	routerPortName := "rtos-" + switchName
+
+	// Query the router port details
+	cmd := []string{"ovn-nbctl", "list", "Logical_Router_Port", routerPortName}
+	output, err := e.execInPod(podName, namespace, "northd", cmd)
+	if err != nil {
+		return "", fmt.Errorf("failed to query router port: %w", err)
+	}
+
+	// Parse output to find MAC address
+	// Format: mac                 : "0a:58:0a:82:00:01"
+	lines := strings.Split(output, "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "mac") && strings.Contains(line, ":") {
+			// Extract MAC from: mac                 : "0a:58:0a:82:00:01"
+			parts := strings.Split(line, ":")
+			if len(parts) >= 2 {
+				// Get everything after the first colon and trim
+				macPart := strings.TrimSpace(strings.Join(parts[1:], ":"))
+				// Remove quotes
+				macPart = strings.Trim(macPart, "\"")
+				return macPart, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("could not find MAC address for router port %s", routerPortName)
 }
 
 // buildOVNTraceCommand builds the ovn-trace command
