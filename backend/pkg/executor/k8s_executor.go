@@ -91,8 +91,8 @@ func (e *K8sTraceExecutor) Execute(req *models.TraceRequest) (string, error) {
 	cmd := e.buildOVNTraceCommand(req)
 	fmt.Printf("INFO: Executing command: %v\n", cmd)
 
-	// Execute the command in the pod
-	output, err := e.execInPod(pod.Name, pod.Namespace, cmd)
+	// Execute the command in the pod (use ovnkube-cluster-manager container)
+	output, err := e.execInPod(pod.Name, pod.Namespace, "ovnkube-cluster-manager", cmd)
 	if err != nil {
 		fmt.Printf("ERROR: Failed to execute ovn-trace: %v\n", err)
 		return "", fmt.Errorf("failed to execute ovn-trace: %w", err)
@@ -192,7 +192,7 @@ func (e *K8sTraceExecutor) buildPacketSpec(req *models.TraceRequest) string {
 }
 
 // execInPod executes a command in a pod and returns the output
-func (e *K8sTraceExecutor) execInPod(podName, namespace string, command []string) (string, error) {
+func (e *K8sTraceExecutor) execInPod(podName, namespace, containerName string, command []string) (string, error) {
 	req := e.clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
@@ -200,10 +200,11 @@ func (e *K8sTraceExecutor) execInPod(podName, namespace string, command []string
 		SubResource("exec")
 
 	req.VersionedParams(&corev1.PodExecOptions{
-		Command: command,
-		Stdout:  true,
-		Stderr:  true,
-		TTY:     false,
+		Container: containerName,
+		Command:   command,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       false,
 	}, scheme.ParameterCodec)
 
 	exec, err := remotecommand.NewSPDYExecutor(e.config, "POST", req.URL())
