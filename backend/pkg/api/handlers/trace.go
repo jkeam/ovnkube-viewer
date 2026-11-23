@@ -47,27 +47,35 @@ func (h *TraceHandler) HandleTrace(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	var req models.TraceRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body"})
 		return
 	}
 
 	// Validate request
 	if req.Source == "" || req.Destination == "" || req.Protocol == "" {
-		http.Error(w, "source, destination, and protocol are required", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "source, destination, and protocol are required"})
 		return
 	}
 
 	// Execute trace
 	output, err := h.executor.Execute(&req)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
 
 	// Parse output
 	result, err := h.parser.Parse(output)
 	if err != nil {
-		http.Error(w, "Failed to parse trace output", http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to parse trace output: " + err.Error()})
 		return
 	}
 

@@ -53,7 +53,10 @@ function App() {
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        // Try to parse error message from response
+        const errorData = await response.json().catch(() => null)
+        const errorMessage = errorData?.error || `HTTP error! status: ${response.status}`
+        throw new Error(errorMessage)
       }
 
       const data: TraceResult = await response.json()
