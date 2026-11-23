@@ -29,7 +29,7 @@ spec:
       containers:
         - name: backend
           image: ovnkube-viewer-backend:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8080
