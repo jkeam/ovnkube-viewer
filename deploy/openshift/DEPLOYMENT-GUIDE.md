@@ -16,6 +16,30 @@ Complete guide for deploying OVN-Kubernetes Trace Viewer on OpenShift.
 
 Deploy to development environment in 3 steps:
 
+### Option A: Using OpenShift Builds (Recommended for ARM Mac → x86 cluster)
+
+```bash
+# 1. Create namespace and push secret
+oc create namespace ovnkube-viewer-dev
+oc create secret docker-registry quay-push-secret \
+  --docker-server=quay.io \
+  --docker-username=<your-username> \
+  --docker-password=<your-password> \
+  -n ovnkube-viewer-dev
+
+# 2. Build images on cluster with Shipwright
+oc apply -f deploy/openshift/shipwright-builds.yaml
+# Trigger builds (see "Building Images" section for details)
+
+# 3. Deploy to OpenShift
+make openshift-deploy OVERLAY=dev
+
+# 4. Get the route URL
+oc get route -n ovnkube-viewer-dev
+```
+
+### Option B: Using Local Podman Builds
+
 ```bash
 # 1. Build and push images
 make openshift-build openshift-push TAG=dev REGISTRY=quay.io/yourorg
@@ -105,6 +129,104 @@ podman build -t quay.io/yourorg/ovnkube-viewer-frontend:latest .
 podman login quay.io
 podman push quay.io/yourorg/ovnkube-viewer-backend:latest
 podman push quay.io/yourorg/ovnkube-viewer-frontend:latest
+```
+
+### Option 3: Using OpenShift Builds (Shipwright) - Recommended for Cross-Architecture
+
+Best option when building from ARM (Apple Silicon) for x86 clusters, or when you want to build on the cluster itself.
+
+**Prerequisites:**
+- OpenShift Builds operator installed on your cluster
+- Quay.io account and push credentials
+
+**Step 1: Create a Quay.io push secret**
+
+```bash
+# Login to Quay.io and get your credentials
+# Then create the secret
+oc create secret docker-registry quay-push-secret \
+  --docker-server=quay.io \
+  --docker-username=<your-username> \
+  --docker-password=<your-password> \
+  -n ovnkube-viewer-dev
+```
+
+**Step 2: Verify Shipwright is installed**
+
+```bash
+# Check for available build strategies
+oc get clusterbuildstrategy
+# You should see: buildah, buildpacks, source-to-image
+```
+
+**Step 3: Create Shipwright Build definitions**
+
+```bash
+# Apply the build definitions
+oc apply -f deploy/openshift/shipwright-builds.yaml
+```
+
+**Step 4: Trigger builds**
+
+```bash
+# Build all three images
+oc create -n ovnkube-viewer-dev -f - <<EOF
+apiVersion: shipwright.io/v1beta1
+kind: BuildRun
+metadata:
+  generateName: backend-
+spec:
+  build:
+    name: ovnkube-viewer-backend
+EOF
+
+oc create -n ovnkube-viewer-dev -f - <<EOF
+apiVersion: shipwright.io/v1beta1
+kind: BuildRun
+metadata:
+  generateName: frontend-
+spec:
+  build:
+    name: ovnkube-viewer-frontend
+EOF
+
+oc create -n ovnkube-viewer-dev -f - <<EOF
+apiVersion: shipwright.io/v1beta1
+kind: BuildRun
+metadata:
+  generateName: plugin-
+spec:
+  build:
+    name: ovnkube-viewer-plugin
+EOF
+```
+
+**Step 5: Monitor builds**
+
+```bash
+# Watch build progress
+oc get buildruns -n ovnkube-viewer-dev -w
+
+# View logs for a specific build
+oc logs -f buildrun/<buildrun-name> -n ovnkube-viewer-dev
+```
+
+**Note:** Builds typically take 3-5 minutes each. The images will be automatically pushed to your Quay.io registry when complete.
+
+### Option 4: Cross-Architecture Build with Podman
+
+If you prefer local builds from ARM Mac for x86 clusters:
+
+```bash
+# Build for linux/amd64 platform
+podman build --platform linux/amd64 -t quay.io/yourorg/ovnkube-viewer-backend:dev -f backend/Dockerfile backend
+podman build --platform linux/amd64 -t quay.io/yourorg/ovnkube-viewer-frontend:dev -f frontend/Dockerfile frontend
+podman build --platform linux/amd64 -t quay.io/yourorg/ovnkube-viewer-plugin:dev -f frontend/Dockerfile.plugin frontend
+
+# Push images
+podman push quay.io/yourorg/ovnkube-viewer-backend:dev
+podman push quay.io/yourorg/ovnkube-viewer-frontend:dev
+podman push quay.io/yourorg/ovnkube-viewer-plugin:dev
 ```
 
 ### Using OpenShift Internal Registry

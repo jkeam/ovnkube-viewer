@@ -1,0 +1,54 @@
+---
+apiVersion: shipwright.io/v1beta1
+kind: Build
+metadata:
+  name: ovnkube-viewer-backend
+  namespace: ovnkube-viewer-dev
+spec:
+  source:
+    git:
+      url: https://github.com/jkeam/ovnkube-viewer.git
+    contextDir: backend
+  strategy:
+    name: buildah
+    kind: ClusterBuildStrategy
+  output:
+    image: quay.io/jkeam0/ovnkube-viewer-backend:dev
+    pushSecret: quay-push-secret
+  dockerfile: Dockerfile
+---
+apiVersion: shipwright.io/v1beta1
+kind: Build
+metadata:
+  name: ovnkube-viewer-frontend
+  namespace: ovnkube-viewer-dev
+spec:
+  source:
+    git:
+      url: https://github.com/jkeam/ovnkube-viewer.git
+    contextDir: frontend
+  strategy:
+    name: buildah
+    kind: ClusterBuildStrategy
+  output:
+    image: quay.io/jkeam0/ovnkube-viewer-frontend:dev
+    pushSecret: quay-push-secret
+  dockerfile: Dockerfile
+---
+apiVersion: shipwright.io/v1beta1
+kind: Build
+metadata:
+  name: ovnkube-viewer-plugin
+  namespace: ovnkube-viewer-dev
+spec:
+  source:
+    git:
+      url: https://github.com/jkeam/ovnkube-viewer.git
+    contextDir: frontend
+  strategy:
+    name: buildah
+    kind: ClusterBuildStrategy
+  output:
+    image: quay.io/jkeam0/ovnkube-viewer-plugin:dev
+    pushSecret: quay-push-secret
+  dockerfile: Dockerfile.plugin

@@ -167,8 +167,8 @@ oc get route -n ovnkube-viewer-dev
 
 The application requires elevated permissions to access OVN components and trace network traffic. See [OpenShift Deployment Guide](deploy/openshift/DEPLOYMENT-GUIDE.md) for:
 - Complete deployment instructions
+- Building images (local podman, cross-architecture, or **OpenShift Builds/Shipwright**)
 - Permission requirements and security considerations
-- Building and pushing container images
 - Customizing configurations
 - Troubleshooting guide
 
