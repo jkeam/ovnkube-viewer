@@ -185,12 +185,52 @@ func (e *K8sTraceExecutor) resolveToIP(identifier string) (string, error) {
 		}
 	}
 
-	// Parse pod/namespace format: pod/name or namespace/pod/name
+	// Parse different formats:
+	// - pod/name (default namespace)
+	// - pod/namespace/name
+	// - namespace/pod/name
+	// - svc/name (default namespace)
+	// - svc/namespace/name
+	// - namespace/svc/name
+
+	// Check for namespace/pod/name or namespace/svc/name format
+	if strings.Contains(identifier, "/") {
+		parts := strings.Split(identifier, "/")
+
+		// namespace/pod/name or namespace/svc/name
+		if len(parts) == 3 && (parts[1] == "pod" || parts[1] == "svc") {
+			namespace := parts[0]
+			resourceType := parts[1]
+			resourceName := parts[2]
+
+			if resourceType == "pod" {
+				pod, err := e.clientset.CoreV1().Pods(namespace).Get(context.TODO(), resourceName, metav1.GetOptions{})
+				if err != nil {
+					return "", fmt.Errorf("failed to get pod %s/%s: %w", namespace, resourceName, err)
+				}
+				if pod.Status.PodIP == "" {
+					return "", fmt.Errorf("pod %s/%s has no IP address", namespace, resourceName)
+				}
+				return pod.Status.PodIP, nil
+			} else { // svc
+				svc, err := e.clientset.CoreV1().Services(namespace).Get(context.TODO(), resourceName, metav1.GetOptions{})
+				if err != nil {
+					return "", fmt.Errorf("failed to get service %s/%s: %w", namespace, resourceName, err)
+				}
+				if svc.Spec.ClusterIP == "" || svc.Spec.ClusterIP == "None" {
+					return "", fmt.Errorf("service %s/%s has no cluster IP", namespace, resourceName)
+				}
+				return svc.Spec.ClusterIP, nil
+			}
+		}
+	}
+
+	// Parse pod/name or pod/namespace/name format
 	if strings.HasPrefix(identifier, "pod/") {
 		podName := strings.TrimPrefix(identifier, "pod/")
 		namespace := "default"
 
-		// Check if it includes namespace
+		// Check if it includes namespace (pod/namespace/name)
 		if strings.Contains(podName, "/") {
 			parts := strings.SplitN(podName, "/", 2)
 			namespace = parts[0]
@@ -210,12 +250,12 @@ func (e *K8sTraceExecutor) resolveToIP(identifier string) (string, error) {
 		return pod.Status.PodIP, nil
 	}
 
-	// Parse service format: svc/name or namespace/svc/name
+	// Parse service format: svc/name or svc/namespace/name
 	if strings.HasPrefix(identifier, "svc/") {
 		svcName := strings.TrimPrefix(identifier, "svc/")
 		namespace := "default"
 
-		// Check if it includes namespace
+		// Check if it includes namespace (svc/namespace/name)
 		if strings.Contains(svcName, "/") {
 			parts := strings.SplitN(svcName, "/", 2)
 			namespace = parts[0]
