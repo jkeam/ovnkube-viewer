@@ -99,16 +99,16 @@ func (e *K8sTraceExecutor) Execute(req *models.TraceRequest) (string, error) {
 	}
 	fmt.Printf("INFO: Found OVN pod: %s in namespace %s\n", pod.Name, pod.Namespace)
 
-	// Find the logical switch and port for the source IP
-	switchName, portName, err := e.findLogicalSwitchAndPort(pod.Name, pod.Namespace, sourceIP)
+	// Find the logical switch, port, and MAC address for the source IP
+	switchName, portName, sourceMac, err := e.findLogicalSwitchPortAndMac(pod.Name, pod.Namespace, sourceIP)
 	if err != nil {
 		fmt.Printf("ERROR: Failed to find logical switch/port for source IP %s: %v\n", req.Source, err)
 		return "", fmt.Errorf("failed to find logical switch/port for source IP: %w", err)
 	}
-	fmt.Printf("INFO: Found logical switch: %s, port: %s for source IP %s\n", switchName, portName, req.Source)
+	fmt.Printf("INFO: Found logical switch: %s, port: %s, MAC: %s for source IP %s\n", switchName, portName, sourceMac, req.Source)
 
-	// Build the ovn-trace command with resolved IPs
-	cmd := e.buildOVNTraceCommand(sourceIP, destIP, req, switchName, portName)
+	// Build the ovn-trace command with resolved IPs and MAC address
+	cmd := e.buildOVNTraceCommand(sourceIP, destIP, sourceMac, req, switchName, portName)
 	fmt.Printf("INFO: Executing command: %v\n", cmd)
 
 	// Execute the command in the pod (use northd container which has access to OVN databases)
@@ -284,16 +284,16 @@ func (e *K8sTraceExecutor) resolveToIP(identifier string) (string, error) {
 	return "", fmt.Errorf("could not resolve %s to an IP address (use pod/name, svc/name, or an IP address)", identifier)
 }
 
-// findLogicalSwitchAndPort finds the logical switch and port for a given IP address
-func (e *K8sTraceExecutor) findLogicalSwitchAndPort(podName, namespace, ip string) (string, string, error) {
+// findLogicalSwitchPortAndMac finds the logical switch, port, and MAC address for a given IP address
+func (e *K8sTraceExecutor) findLogicalSwitchPortAndMac(podName, namespace, ip string) (string, string, string, error) {
 	// Query ovn-nbctl to find the port with this IP address
 	cmd := []string{"ovn-nbctl", "show"}
 	output, err := e.execInPod(podName, namespace, "northd", cmd)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to query OVN database: %w", err)
+		return "", "", "", fmt.Errorf("failed to query OVN database: %w", err)
 	}
 
-	// Parse the output to find the switch and port
+	// Parse the output to find the switch, port, and MAC
 	// Format:
 	// switch <uuid> (<switch-name>)
 	//     port <port-name>
@@ -326,7 +326,9 @@ func (e *K8sTraceExecutor) findLogicalSwitchAndPort(podName, namespace, ip strin
 		if strings.Contains(line, "addresses:") && strings.Contains(line, ip) {
 			// Verify this is the exact IP (not a substring match)
 			if strings.Contains(line, " "+ip+"\"") || strings.Contains(line, " "+ip+"]") {
-				return currentSwitch, currentPort, nil
+				// Extract MAC address from: addresses: ["<mac> <ip>"]
+				mac := e.extractMacFromAddresses(line)
+				return currentSwitch, currentPort, mac, nil
 			}
 		}
 
@@ -335,17 +337,48 @@ func (e *K8sTraceExecutor) findLogicalSwitchAndPort(podName, namespace, ip strin
 			nextLine := lines[i+1]
 			if strings.Contains(nextLine, ip) {
 				if strings.Contains(nextLine, " "+ip+"\"") || strings.Contains(nextLine, " "+ip+"]") {
-					return currentSwitch, currentPort, nil
+					mac := e.extractMacFromAddresses(nextLine)
+					return currentSwitch, currentPort, mac, nil
 				}
 			}
 		}
 	}
 
-	return "", "", fmt.Errorf("could not find logical switch and port for IP %s", ip)
+	return "", "", "", fmt.Errorf("could not find logical switch, port, and MAC for IP %s", ip)
+}
+
+// extractMacFromAddresses extracts MAC address from addresses line
+func (e *K8sTraceExecutor) extractMacFromAddresses(line string) string {
+	// Look for pattern: addresses: ["<mac> <ip>"] or similar
+	start := strings.Index(line, "[\"")
+	if start == -1 {
+		start = strings.Index(line, "['")
+	}
+	if start == -1 {
+		return ""
+	}
+
+	start += 2 // Skip ["
+	end := strings.Index(line[start:], "\"")
+	if end == -1 {
+		end = strings.Index(line[start:], "'")
+	}
+	if end == -1 {
+		return ""
+	}
+
+	// Extract the content: "<mac> <ip>"
+	content := line[start : start+end]
+	parts := strings.Fields(content)
+	if len(parts) >= 1 {
+		return parts[0] // Return MAC address
+	}
+
+	return ""
 }
 
 // buildOVNTraceCommand builds the ovn-trace command
-func (e *K8sTraceExecutor) buildOVNTraceCommand(sourceIP, destIP string, req *models.TraceRequest, switchName, portName string) []string {
+func (e *K8sTraceExecutor) buildOVNTraceCommand(sourceIP, destIP, sourceMac string, req *models.TraceRequest, switchName, portName string) []string {
 	cmd := []string{"ovn-trace"}
 
 	// Add options
@@ -354,19 +387,24 @@ func (e *K8sTraceExecutor) buildOVNTraceCommand(sourceIP, destIP string, req *mo
 	// Use the logical switch as the datapath
 	cmd = append(cmd, switchName)
 
-	// Build packet specification with the actual port name and resolved IPs
-	packetSpec := e.buildPacketSpec(sourceIP, destIP, req, portName)
+	// Build packet specification with the actual port name, resolved IPs, and MAC address
+	packetSpec := e.buildPacketSpec(sourceIP, destIP, sourceMac, req, portName)
 	cmd = append(cmd, packetSpec)
 
 	return cmd
 }
 
 // buildPacketSpec builds the packet specification for ovn-trace
-func (e *K8sTraceExecutor) buildPacketSpec(sourceIP, destIP string, req *models.TraceRequest, portName string) string {
+func (e *K8sTraceExecutor) buildPacketSpec(sourceIP, destIP, sourceMac string, req *models.TraceRequest, portName string) string {
 	parts := []string{}
 
 	// Add inport with the actual port name from OVN database
 	parts = append(parts, fmt.Sprintf("inport==\"%s\"", portName))
+
+	// Add source MAC address to pass port security checks
+	if sourceMac != "" {
+		parts = append(parts, fmt.Sprintf("eth.src==%s", sourceMac))
+	}
 
 	// Add source and destination IPs (resolved from pod/service names if needed)
 	parts = append(parts, fmt.Sprintf("ip4.src==%s", sourceIP))
