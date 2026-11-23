@@ -19,11 +19,12 @@ RUN npm run build:plugin
 # Runtime stage - use UBI9 nginx for serving plugin
 FROM registry.access.redhat.com/ubi9/nginx-126:9.9-1795267041
 
-# Copy custom nginx configuration for console plugin
-COPY nginx.plugin.conf /etc/nginx/nginx.conf
-
 # Copy plugin artifacts
 COPY --from=builder /opt/app-root/src/dist/plugin /opt/app-root/src
+
+# Create nginx config directory and copy custom server configuration
+RUN mkdir -p /opt/app-root/etc/nginx.d
+COPY nginx.plugin.server.conf /opt/app-root/etc/nginx.d/plugin.conf
 
 # Run as non-root user (nginx user)
 USER 1001

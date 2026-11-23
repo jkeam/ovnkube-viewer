@@ -41,7 +41,7 @@ spec:
             runAsNonRoot: true
           livenessProbe:
             httpGet:
-              path: /plugin-manifest.json
+              path: /health
               port: http
               scheme: HTTP
             initialDelaySeconds: 30
@@ -50,7 +50,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /plugin-manifest.json
+              path: /health
               port: http
               scheme: HTTP
             initialDelaySeconds: 10
