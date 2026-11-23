@@ -12,7 +12,7 @@ data:
 
   # OVN configuration
   OVN_NAMESPACE: "openshift-ovn-kubernetes"
-  OVN_MASTER_POD_LABEL: "app=ovnkube-master"
+  OVN_MASTER_POD_LABEL: "app=ovnkube-control-plane"
   OVN_NODE_POD_LABEL: "app=ovnkube-node"
 
   # Trace configuration

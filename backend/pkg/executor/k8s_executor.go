@@ -82,18 +82,23 @@ func (e *K8sTraceExecutor) Execute(req *models.TraceRequest) (string, error) {
 	// Find an OVN master pod
 	pod, err := e.findOVNMasterPod()
 	if err != nil {
+		fmt.Printf("ERROR: Failed to find OVN master pod: %v\n", err)
 		return "", fmt.Errorf("failed to find OVN master pod: %w", err)
 	}
+	fmt.Printf("INFO: Found OVN pod: %s in namespace %s\n", pod.Name, pod.Namespace)
 
 	// Build the ovn-trace command
 	cmd := e.buildOVNTraceCommand(req)
+	fmt.Printf("INFO: Executing command: %v\n", cmd)
 
 	// Execute the command in the pod
 	output, err := e.execInPod(pod.Name, pod.Namespace, cmd)
 	if err != nil {
+		fmt.Printf("ERROR: Failed to execute ovn-trace: %v\n", err)
 		return "", fmt.Errorf("failed to execute ovn-trace: %w", err)
 	}
 
+	fmt.Printf("INFO: ovn-trace output length: %d bytes\n", len(output))
 	return output, nil
 }
 

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -22,12 +23,14 @@ func NewTraceHandler() *TraceHandler {
 	k8sExecutor, err := executor.NewK8sTraceExecutor()
 	if err != nil {
 		// Fall back to local executor (which uses mock data)
+		log.Printf("WARNING: Failed to create K8s executor, using mock executor: %v", err)
 		return &TraceHandler{
 			executor: executor.NewTraceExecutor(),
 			parser:   parser.NewParser(),
 		}
 	}
 
+	log.Printf("INFO: Using Kubernetes-based OVN trace executor")
 	return &TraceHandler{
 		executor: k8sExecutor,
 		parser:   parser.NewParser(),
