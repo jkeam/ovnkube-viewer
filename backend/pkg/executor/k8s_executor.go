@@ -381,8 +381,8 @@ func (e *K8sTraceExecutor) extractMacFromAddresses(line string) string {
 func (e *K8sTraceExecutor) buildOVNTraceCommand(sourceIP, destIP, sourceMac string, req *models.TraceRequest, switchName, portName string) []string {
 	cmd := []string{"ovn-trace"}
 
-	// Add options
-	cmd = append(cmd, "--detail")
+	// Add options - use --minimal for cleaner output showing high-level path
+	cmd = append(cmd, "--minimal")
 
 	// Use the logical switch as the datapath
 	cmd = append(cmd, switchName)
