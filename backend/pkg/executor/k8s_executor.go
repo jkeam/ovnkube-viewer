@@ -87,8 +87,16 @@ func (e *K8sTraceExecutor) Execute(req *models.TraceRequest) (string, error) {
 	}
 	fmt.Printf("INFO: Found OVN pod: %s in namespace %s\n", pod.Name, pod.Namespace)
 
+	// Find the logical switch and port for the source IP
+	switchName, portName, err := e.findLogicalSwitchAndPort(pod.Name, pod.Namespace, req.Source)
+	if err != nil {
+		fmt.Printf("ERROR: Failed to find logical switch/port for source IP %s: %v\n", req.Source, err)
+		return "", fmt.Errorf("failed to find logical switch/port for source IP: %w", err)
+	}
+	fmt.Printf("INFO: Found logical switch: %s, port: %s for source IP %s\n", switchName, portName, req.Source)
+
 	// Build the ovn-trace command
-	cmd := e.buildOVNTraceCommand(req)
+	cmd := e.buildOVNTraceCommand(req, switchName, portName)
 	fmt.Printf("INFO: Executing command: %v\n", cmd)
 
 	// Execute the command in the pod (use northd container which has access to OVN databases)
@@ -154,41 +162,89 @@ func (e *K8sTraceExecutor) findOVNNodePod() (*corev1.Pod, error) {
 	return nil, fmt.Errorf("no running OVN node pods found")
 }
 
+// findLogicalSwitchAndPort finds the logical switch and port for a given IP address
+func (e *K8sTraceExecutor) findLogicalSwitchAndPort(podName, namespace, ip string) (string, string, error) {
+	// Query ovn-nbctl to find the port with this IP address
+	cmd := []string{"ovn-nbctl", "show"}
+	output, err := e.execInPod(podName, namespace, "northd", cmd)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to query OVN database: %w", err)
+	}
+
+	// Parse the output to find the switch and port
+	// Format:
+	// switch <uuid> (<switch-name>)
+	//     port <port-name>
+	//         addresses: ["<mac> <ip>"]
+
+	lines := strings.Split(output, "\n")
+	var currentSwitch string
+	var currentPort string
+
+	for i, line := range lines {
+		// Look for switch declarations
+		if strings.HasPrefix(line, "switch ") {
+			// Extract switch name from: switch <uuid> (<name>)
+			if idx := strings.Index(line, "("); idx != -1 {
+				if endIdx := strings.Index(line[idx:], ")"); endIdx != -1 {
+					currentSwitch = line[idx+1 : idx+endIdx]
+				}
+			}
+		}
+
+		// Look for port declarations
+		if strings.Contains(line, "port ") && strings.HasPrefix(strings.TrimSpace(line), "port ") {
+			parts := strings.Fields(strings.TrimSpace(line))
+			if len(parts) >= 2 {
+				currentPort = parts[1]
+			}
+		}
+
+		// Look for addresses containing our IP
+		if strings.Contains(line, "addresses:") && strings.Contains(line, ip) {
+			// Verify this is the exact IP (not a substring match)
+			if strings.Contains(line, " "+ip+"\"") || strings.Contains(line, " "+ip+"]") {
+				return currentSwitch, currentPort, nil
+			}
+		}
+
+		// Also check the next line after "addresses:" for multi-line format
+		if strings.Contains(line, "addresses:") && i+1 < len(lines) {
+			nextLine := lines[i+1]
+			if strings.Contains(nextLine, ip) {
+				if strings.Contains(nextLine, " "+ip+"\"") || strings.Contains(nextLine, " "+ip+"]") {
+					return currentSwitch, currentPort, nil
+				}
+			}
+		}
+	}
+
+	return "", "", fmt.Errorf("could not find logical switch and port for IP %s", ip)
+}
+
 // buildOVNTraceCommand builds the ovn-trace command
-func (e *K8sTraceExecutor) buildOVNTraceCommand(req *models.TraceRequest) []string {
+func (e *K8sTraceExecutor) buildOVNTraceCommand(req *models.TraceRequest, switchName, portName string) []string {
 	cmd := []string{"ovn-trace"}
 
 	// Add options
 	cmd = append(cmd, "--detail")
 
-	// TODO: Determine the correct logical switch/router from the source
-	// For now, we'll use a simplified approach
-	// In a real implementation, we would:
-	// 1. Query the OVN database to find the logical switch for the source
-	// 2. Determine if the traffic is intra-node or inter-node
-	// 3. Build the appropriate datapath
+	// Use the logical switch as the datapath
+	cmd = append(cmd, switchName)
 
-	// Add datapath (this needs to be determined from the cluster state)
-	// Example: ovn-trace --detail ovn_cluster_router 'inport=="rtos-ovn_cluster_router" && ip4.src==10.244.0.5 && ip4.dst==10.244.1.6 && tcp && tcp.dst==80'
-
-	// For now, use a simplified command that traces through the cluster
-	datapath := "ovn_cluster_router"
-	cmd = append(cmd, datapath)
-
-	// Build packet specification
-	packetSpec := e.buildPacketSpec(req)
+	// Build packet specification with the actual port name
+	packetSpec := e.buildPacketSpec(req, portName)
 	cmd = append(cmd, packetSpec)
 
 	return cmd
 }
 
 // buildPacketSpec builds the packet specification for ovn-trace
-func (e *K8sTraceExecutor) buildPacketSpec(req *models.TraceRequest) string {
+func (e *K8sTraceExecutor) buildPacketSpec(req *models.TraceRequest, portName string) string {
 	parts := []string{}
 
-	// Add inport (needs to be determined from actual topology)
-	// For now, use a generic approach
-	parts = append(parts, fmt.Sprintf("inport==\"rtos-ovn_cluster_router\""))
+	// Add inport with the actual port name from OVN database
+	parts = append(parts, fmt.Sprintf("inport==\"%s\"", portName))
 
 	// Add source and destination IPs
 	parts = append(parts, fmt.Sprintf("ip4.src==%s", req.Source))
